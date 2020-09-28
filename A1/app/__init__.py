@@ -23,8 +23,10 @@ def create_app():
     #     pass
 
     # register the blueprint to associate with a separate file and path
-    from . import login
-    app.register_blueprint(login.bp)
+    from app import api
+    app.register_blueprint(api.bp)
+    from app import main
+    app.register_blueprint(main.bp)
 
     return app
 
