@@ -25,7 +25,7 @@ def create_app():
 
     # initialize the database connection
     from app import database
-    database.init_db()
+    # database.init_db()
 
     # register the blueprint to associate with a separate file and path
     from app import api
@@ -34,6 +34,8 @@ def create_app():
     app.register_blueprint(main.bp)
     from app import login
     app.register_blueprint(login.bp)
+    from app import detection
+    app.register_blueprint(detection.bp)
 
     return app
 

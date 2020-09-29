@@ -8,10 +8,8 @@ def work():
         username = request.form['username']
         password = request.form['password']
         cursor = db_conn.cursor()
-
-        # sample connection test, will need to remove later
-        sql = "SELECT * FROM test"
-        cursor.execute(sql)
+        sql_stmt = "SELECT * FROM user WHERE username='{}' AND password='{}'".format(username, password)
+        cursor.execute(sql_stmt)
         a = list()
         for i in cursor:
             a.append(i)

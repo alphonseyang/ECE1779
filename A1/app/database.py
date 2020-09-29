@@ -8,7 +8,7 @@ DATABASE_CONFIG = {
     "port": 3306,
     "user": "root",
     "password": "rootroot",
-    "database": "ece1779"
+    "database": "ECE1779A1"
 }
 
 
