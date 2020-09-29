@@ -1,16 +1,18 @@
 import os
 from datetime import datetime
 
-from flask import render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for
 
 from FaceMaskDetection import pytorch_infer
+from app import constants
+from app.login import login_required
 
-TEMP_FOLDER = '../../FaceMaskDetection/test/'
-DEST_FOLDER = '../../FaceMaskDetection/test/output/'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+bp = Blueprint('detection', __name__, url_prefix='/detection')
 
 
-def work():
+@bp.route('/', methods=('GET', 'POST'))
+@login_required
+def detect():
     if request.method == "POST":
         # TODO: check file exists
         if 'file' not in request.files:
@@ -22,8 +24,8 @@ def work():
             # TODO: save file based on the user
             filename = generate_file_name()
             # TODO: save to the designated location
-            dest_path = DEST_FOLDER + filename
-            temp_file_path = os.path.join(TEMP_FOLDER, filename)
+            dest_path = constants.DEST_FOLDER + filename
+            temp_file_path = os.path.join(constants.TEMP_FOLDER, filename)
             file.save(temp_file_path)
             pytorch_infer.main(temp_file_path, dest_path)
             os.remove(temp_file_path)
@@ -41,4 +43,4 @@ def generate_file_name():
 
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in constants.ALLOWED_EXTENSIONS

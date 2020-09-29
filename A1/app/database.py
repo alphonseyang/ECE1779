@@ -1,4 +1,4 @@
-from mysql import connector
+import pymysql
 
 db_conn = None
 # will need to install mysql and set up user info
@@ -8,13 +8,13 @@ DATABASE_CONFIG = {
     "port": 3306,
     "user": "root",
     "password": "rootroot",
-    "database": "ECE1779A1"
+    "db": "ECE1779A1"
 }
 
 
 def init_db():
     global db_conn
-    db_conn = connector.connect(**DATABASE_CONFIG)
+    db_conn = pymysql.connect(**DATABASE_CONFIG)
 
 
 def close_db():

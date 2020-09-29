@@ -1,0 +1,17 @@
+<!doctype html>
+<title>{% block title %}{% endblock %}</title>
+<section class="content">
+  <header>
+      {% block header %}
+      <form action="/login/logout">
+            <button name="logoutBtn" type="submit">Log Out</button>
+        </form>
+      {% endblock %}
+  </header>
+
+  {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+
+  {% block content %}{% endblock %}
+</section>

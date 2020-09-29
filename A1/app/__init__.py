@@ -1,5 +1,4 @@
-from flask import Flask, g
-from flaskext.mysql import MySQL
+from flask import Flask
 
 
 def create_app():
@@ -25,17 +24,17 @@ def create_app():
 
     # initialize the database connection
     from app import database
-    # database.init_db()
+    database.init_db()
 
     # register the blueprint to associate with a separate file and path
     from app import api
     app.register_blueprint(api.bp)
-    from app import main
-    app.register_blueprint(main.bp)
     from app import login
     app.register_blueprint(login.bp)
     from app import detection
     app.register_blueprint(detection.bp)
+
+    app.secret_key = "ECE1779A1"
 
     return app
 
