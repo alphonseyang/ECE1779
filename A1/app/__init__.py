@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, g
+from flaskext.mysql import MySQL
 
 
 def create_app():
@@ -22,11 +23,17 @@ def create_app():
     # except OSError:
     #     pass
 
+    # initialize the database connection
+    from app import database
+    database.init_db()
+
     # register the blueprint to associate with a separate file and path
     from app import api
     app.register_blueprint(api.bp)
     from app import main
     app.register_blueprint(main.bp)
+    from app import login
+    app.register_blueprint(login.bp)
 
     return app
 
