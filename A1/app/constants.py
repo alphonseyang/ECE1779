@@ -10,6 +10,7 @@ USER = "user"
 
 
 # constants for detection file location
-DEST_FOLDER = ""
-TEMP_FOLDER = ""
+# the path is relative to the venv/bin/
+DEST_FOLDER = "../../FaceMaskDetection/test/output/"
+TEMP_FOLDER = "../../FaceMaskDetection/test/"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
