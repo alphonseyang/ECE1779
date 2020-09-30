@@ -33,6 +33,8 @@ def create_app():
     app.register_blueprint(login.bp)
     from app import detection
     app.register_blueprint(detection.bp)
+    from app import user
+    app.register_blueprint(user.bp)
 
     app.secret_key = "ECE1779A1"
 

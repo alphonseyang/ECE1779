@@ -1,17 +1,27 @@
 <!doctype html>
 <title>{% block title %}{% endblock %}</title>
 <section class="content">
-  <header>
-      {% block header %}
-      <form action="/login/logout">
-            <button name="logoutBtn" type="submit">Log Out</button>
-        </form>
-      {% endblock %}
-  </header>
+    <header>
+        {% block header %}
+        <div>
 
-  {% for message in get_flashed_messages() %}
+        </div>
+        <div class="topnav">
+            <a href="/detection">Detection</a>
+            {% if g.user[2] == "admin" %}
+            <a href="{{url_for('user.user_management')}}">Users</a>
+            {% endif %}
+            <a href="{{url_for('user.user_profile', username=g.user[0])}}">Profile</a>
+            <form action="/login/logout">
+                <button name="logoutBtn" type="submit">Log Out</button>
+            </form>
+        </div>
+        {% endblock %}
+    </header>
+
+    {% for message in get_flashed_messages() %}
     <div class="flash">{{ message }}</div>
-  {% endfor %}
+    {% endfor %}
 
-  {% block content %}{% endblock %}
+    {% block content %}{% endblock %}
 </section>

@@ -61,6 +61,18 @@ def login_required(view):
     return wrapped_view
 
 
+# decorator method that force all not signed request to jump back to login page
+def login_admin_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None or g.user[constants.ROLE] == constants.USER:
+            flash("You don't have permission to access user management page")
+            return redirect(url_for('detection.detect'))
+        return view(**kwargs)
+
+    return wrapped_view
+
+
 def authenticate(username, password):
     # TODO: hash password and compare the hashed password
     try:

@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 import requests
-from flask import Blueprint, flash, g, render_template, request, redirect, url_for
+from flask import Blueprint, flash, g, render_template, request, redirect
 
 from FaceMaskDetection import pytorch_infer
 from app import constants
@@ -42,16 +42,23 @@ def detect():
                 return redirect(request.url)
 
         # pass all check, upload the file
-        _, msg, _ = upload_file(file_data)
+        msg, _ = upload_file(file_data)
         flash(msg)
         return redirect(request.url)
 
-    return render_template("detection.html")
+    return render_template("detection/detection.html")
+
+
+@bp.route("/<image_id>")
+@login_required
+def show_image(image_id):
+    # TODO: get image based on the id
+    # TODO: render the show view
+    return ''
 
 
 # main logic to upload file and save records
 def upload_file(file_data):
-    success = False
     output_info = None
     # TODO: (not sure if we need) save the original file based on the user
     output_file_name = generate_file_name()
@@ -68,8 +75,7 @@ def upload_file(file_data):
         msg = "Unexpected error {}".format(e)
     else:
         msg = "Successfully detected file"
-        success = True
-    return success, msg, output_info
+    return msg, output_info
 
 
 # generate file name based on the current user name and time

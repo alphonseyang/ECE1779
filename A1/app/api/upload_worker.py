@@ -24,8 +24,8 @@ def work():
 
     # upload file and check the status
     file_data = file.read()
-    success, msg, output_info = upload_file(file_data)
-    if not success:
+    msg, output_info = upload_file(file_data)
+    if not output_info:
         response["error"] = {"code": "UploadFailure", "Message": msg}
         return response
 
