@@ -8,6 +8,12 @@ ROLE = 2
 ADMIN = "admin"
 USER = "user"
 
+# constants for photo categories
+NO_FACES_DETECTED = 0
+ALL_FACES_WEAR_MASKS = 1
+NO_FACES_WEAR_MASKS = 2
+PARTIAL_FACES_WEAR_MASKS = 3
+
 
 # constants for detection file location
 # the path is relative to the venv/bin/

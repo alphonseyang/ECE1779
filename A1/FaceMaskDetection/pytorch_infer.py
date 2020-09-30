@@ -8,7 +8,7 @@ from .utils.anchor_decode import decode_bbox
 from .utils.anchor_generator import generate_anchors
 from .utils.nms import single_class_non_max_suppression
 
-model = load_pytorch_model('../../FaceMaskDetection/models/model360.pth')
+model = load_pytorch_model('FaceMaskDetection/models/model360.pth')
 # anchor configuration
 feature_map_sizes = [[45, 45], [23, 23], [12, 12], [6, 6], [4, 4]]
 anchor_sizes = [[0.04, 0.056], [0.08, 0.11], [0.16, 0.22], [0.32, 0.45], [0.64, 0.72]]
