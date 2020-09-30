@@ -94,4 +94,4 @@ def inference(image,
 def main(img_path, dest_path):
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    inference(img, dest_path, show_result=True, target_shape=(360, 360))
+    return inference(img, dest_path, show_result=True, target_shape=(360, 360))

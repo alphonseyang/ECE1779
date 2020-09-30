@@ -12,3 +12,4 @@ torchvision==0.7.0
 Werkzeug==1.0.1
 mysql-connector-python
 PyMySQL
+requests

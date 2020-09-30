@@ -13,14 +13,8 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        # TODO: hash password and compare the hashed password
-        cursor = db_conn.cursor()
-        sql_stmt = "SELECT * FROM user WHERE username='{}' AND password='{}'".format(username, password)
-        cursor.execute(sql_stmt)
-        user = cursor.fetchone()
-
-        error = None if user else "Incorrect username or password"
-        if not error:
+        user, error = authenticate(username, password)
+        if not error and user:
             session.clear()
             session["username"] = user[constants.USERNAME]
             return redirect(url_for("detection.detect"))
@@ -61,3 +55,18 @@ def login_required(view):
         return view(**kwargs)
 
     return wrapped_view
+
+
+def authenticate(username, password):
+    # TODO: hash password and compare the hashed password
+    try:
+        user = None
+        cursor = db_conn.cursor()
+        sql_stmt = "SELECT * FROM user WHERE username='{}' AND password='{}'".format(username, password)
+        cursor.execute(sql_stmt)
+        user = cursor.fetchone()
+    except Exception as e:
+        error = "Unexpected error {}".format(e)
+    else:
+        error = None if user else "Incorrect username or password"
+    return user, error
