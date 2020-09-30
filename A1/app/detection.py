@@ -16,9 +16,7 @@ bp = Blueprint('detection', __name__, url_prefix='/detection')
 @login_required
 def detect():
     if request.method == "POST":
-
-        # TODO: move this part to the upload worker to support API
-        # TODO: support online image
+        # ensure image is provided
         if 'file' not in request.files and 'online_file' not in request.form:
             flash("No file or URL provided")
             return redirect(request.url)

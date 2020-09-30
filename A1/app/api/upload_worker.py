@@ -17,8 +17,8 @@ def work():
         return response
 
     # authenticate to ensure proper credentials
-    user, error = authenticate(username, password)
-    if error or not user:
+    error = authenticate(username, password)
+    if error:
         response["error"] = {"code": "InvalidCredentials", "Message": error}
         return response
 
