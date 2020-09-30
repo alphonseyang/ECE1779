@@ -1,6 +1,6 @@
 import sys
 import torch
-sys.path.append('../../FaceMaskDetection/models/')
+sys.path.append('FaceMaskDetection/models/')
 
 
 def load_pytorch_model(model_path):
