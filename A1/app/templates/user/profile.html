@@ -1,0 +1,15 @@
+{% extends 'base_header.html' %}
+
+{% block content %}
+<h1>User Profile</h1>
+<p>Username: {{ username }}</p>
+<form action="{{ '/user/{}'.format(username) }}" method="post">
+    <label for="oldPassword">Old Password</label>
+    <input type="password" name="old_password" id="oldPassword" required><br>
+    <label for="newPassword">New Password</label>
+    <input type="password" name="new_password" id="newPassword" required><br>
+    <label for="newPasswordConfirm">Confirm New Password</label>
+    <input type="password" name="new_password_confirm" id="newPasswordConfirm" required><br>
+    <button name="changePasswordBtn" type="submit">Change Password</button>
+</form>
+{% endblock %}

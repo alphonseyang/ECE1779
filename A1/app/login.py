@@ -23,12 +23,13 @@ def login():
     return render_template('login/login.html')
 
 
-@bp.route('/password_recovery', methods=('GET', 'POST'))
+@bp.route('/password_change', methods=['POST'])
 def password_recovery():
-    return render_template("login/password_recovery.html")
+    # TODO: hwo to recover?
+    return ""
 
 
-@bp.route('/logout')
+@bp.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     return redirect(url_for("login.login"))
@@ -74,10 +75,10 @@ def login_admin_required(view):
 
 
 def authenticate(username, password):
-    # TODO: hash password and compare the hashed password
     try:
         cursor = db_conn.cursor()
-        sql_stmt = "SELECT * FROM user WHERE username='{}' AND password='{}'".format(username, password)
+        hash_pwd = generate_hashed_password(password)
+        sql_stmt = "SELECT * FROM user WHERE username='{}' AND password='{}'".format(username, hash_pwd)
         cursor.execute(sql_stmt)
         user = cursor.fetchone()
     except Exception as e:
@@ -90,3 +91,8 @@ def authenticate(username, password):
             # load logged in user for api case, normally this will be loaded before every request
             load_logged_in_user()
     return error
+
+
+def generate_hashed_password(password):
+    # TODO: hash password
+    return password
