@@ -14,6 +14,12 @@ NO_FACES_DETECTED = 0
 ALL_FACES_WEAR_MASKS = 1
 NO_FACES_WEAR_MASKS = 2
 PARTIAL_FACES_WEAR_MASKS = 3
+CATEGORY_MAP = {
+    NO_FACES_DETECTED: "No face detected in image",
+    ALL_FACES_WEAR_MASKS: "All faces from image are wearing masks",
+    NO_FACES_WEAR_MASKS: "No face from image is wearing masks",
+    PARTIAL_FACES_WEAR_MASKS: "Only some faces from image are wearing masks"
+}
 
 
 # constants for detection file location

@@ -2,4 +2,8 @@
 
 {% block content %}
 <img src="{{url_for('static', filename=image_record[0])}}" height="600">
+<p>Result: {{category_map[image_record[1]]}}</p>
+<p>Number of Faces Detected: {{image_record[2]}}</p>
+<p>Number of Faces Wearing Masks: {{image_record[3]}}</p>
+<p>Number of Faces Not Wearing Masks: {{image_record[4]}}</p>
 {% endblock %}

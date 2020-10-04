@@ -68,18 +68,18 @@ def show_image(image_id):
         # if not found
         if not image_record:
             flash("Couldn't find the image")
-            return redirect(request.url)
+            return redirect(url_for("detection.detect"))
 
         # prevent unwanted access from other user
         if image_record[-1] != g.user[constants.USERNAME]:
             flash("Not allowed to access the image uploaded by other user")
-            return redirect(request.url)
+            return redirect(url_for("detection.detect"))
 
     except Exception as e:
         flash("Unexpected exception {}".format(e))
-        return redirect(request.url)
+        return redirect(url_for("detection.detect"))
 
-    return render_template("detection/show.html", image_record=image_record)
+    return render_template("detection/show.html", image_record=image_record, category_map=constants.CATEGORY_MAP)
 
 
 # main logic to upload file and save records

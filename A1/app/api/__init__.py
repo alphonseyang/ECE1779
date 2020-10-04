@@ -6,7 +6,7 @@ from app.api import register_worker, upload_worker
 bp = Blueprint('api', __name__, url_prefix='/api')
 
 
-@bp.route("/register", methods=('GET', 'POST'))
+@bp.route("/register", methods=['POST'])
 def register():
     return register_worker.work()
 

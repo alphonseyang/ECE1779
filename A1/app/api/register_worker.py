@@ -1,3 +1,4 @@
+from http import HTTPStatus
 
 from flask import request
 
@@ -7,37 +8,47 @@ from app.database import db_conn
 
 def work():
     response = {"success": False}
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+    status_code = HTTPStatus.BAD_REQUEST
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    # request validation before doing actual work
+    if not username:
+        response["error"] = {"code": "MissingParameter",
+                             "Message": "Please provide username in request"}
+        return response, status_code
+    elif not password:
+        response["error"] = {"code": "MissingParameter",
+                             "Message": "Please provide password in request"}
+        return response, status_code
+    elif username in constants.RESERVED_NAMES:
+        response["error"] = {"code": "ReservedUsername",
+                             "Message": "The username provided is reserved"}
+        return response, status_code
+
+    try:
+        # check if the user is registered or not
         cursor = db_conn.cursor()
-
-        if username in constants.RESERVED_NAMES:
-            response["error"] = {"code": "Reserved Username",
-                                 "Message": "Username is reserved"}
-            return response
-
-        error = None
         sql_stmt = "SELECT * FROM user WHERE username='{}' ".format(username)
         cursor.execute(sql_stmt)
 
-        if not username:
-            response["error"] = {"code": "Missing field",
-                                 "Message": "Username is required"}
-            return response
-
-        elif not password:
-            response["error"] = {"code": "Missing field",
-                                 "Message": "password is required"}
-        elif cursor.fetchone() is not None:
-            response["error"] = {"code": "User already existed",
+        if cursor.fetchone() is not None:
+            response["error"] = {"code": "UserAlreadyExists",
                                  "Message": "Username is already registered"}
-        # TODO: hash password
-        insert_stmt = 'INSERT INTO user (username, password,role) VALUES ("{}", "{}","user")'.format(username, password)
-        if error is None:
-            cursor.execute(insert_stmt)
-            db_conn.commit()
-            response["success"] = True
-            return response
+            return response, status_code
 
-    return response
+        # TODO: hash password
+        # create new user and insert into DB
+        insert_stmt = 'INSERT INTO user (username, password,role) VALUES ("{}", "{}","user")'.format(username, password)
+        cursor.execute(insert_stmt)
+        db_conn.commit()
+
+    except Exception as e:
+        status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+        response["error"] = {"code": "ServerError",
+                             "Message": "Unexpected Server Error {}".format(e)}
+    else:
+        status_code = HTTPStatus.OK
+        response["success"] = True
+
+    return response, status_code
