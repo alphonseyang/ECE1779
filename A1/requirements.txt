@@ -5,10 +5,10 @@ itsdangerous==1.1.0
 Jinja2==2.11.2
 MarkupSafe==1.1.1
 numpy==1.19.2
-opencv-python==4.4.0.44
+opencv-python
 Pillow==7.2.0
-torch==1.6.0
-torchvision==0.7.0
+torch
+torchvision
 Werkzeug==1.0.1
 mysql-connector-python
 PyMySQL
