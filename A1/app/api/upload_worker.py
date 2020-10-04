@@ -1,6 +1,6 @@
 from flask import request
 
-from app.detection import upload_file
+from app.detection import extract_mask_info, upload_file
 from app.login import authenticate
 
 
@@ -30,9 +30,5 @@ def work():
         return response
 
     response["success"] = True
-    response["payload"] = {
-        "num_faces": len(output_info),
-        "num_masked": sum([1 for face in output_info if face[0] == 1]),
-        "num_unmasked": sum([1 for face in output_info if face[0] == 0])
-    }
+    response["payload"] = extract_mask_info(output_info)
     return response

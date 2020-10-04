@@ -17,6 +17,6 @@ PARTIAL_FACES_WEAR_MASKS = 3
 
 # constants for detection file location
 # the path is relative to the venv/bin/
-DEST_FOLDER = "FaceMaskDetection/test/output/"
-TEMP_FOLDER = "FaceMaskDetection/test/"
+DEST_FOLDER = "images/"
+TEMP_FOLDER = "images/temp/"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
