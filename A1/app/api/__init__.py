@@ -1,5 +1,5 @@
 
-from flask import Blueprint, g, redirect, render_template, request, session, url_for
+from flask import Blueprint
 
 from app.api import register_worker, upload_worker
 
