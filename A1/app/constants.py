@@ -7,6 +7,7 @@ ROLE = 2
 # constants for role types
 ADMIN = "admin"
 USER = "user"
+RESERVED_NAMES = {"temp", "test", "root"}
 
 # constants for photo categories
 NO_FACES_DETECTED = 0
@@ -16,7 +17,8 @@ PARTIAL_FACES_WEAR_MASKS = 3
 
 
 # constants for detection file location
-# the path is relative to the venv/bin/
+# the path is relative to the A1/
+STATIC_PREFIX = "app/static/"
 DEST_FOLDER = "images/"
-TEMP_FOLDER = "images/temp/"
+TEMP_FOLDER = "app/static/images/temp/"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}

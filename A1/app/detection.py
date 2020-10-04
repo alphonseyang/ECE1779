@@ -87,14 +87,20 @@ def upload_file(file_data):
     output_info = None
     output_file_name, image_id = generate_file_name()
     user_image_folder = constants.DEST_FOLDER + g.user[constants.USERNAME] + "/"
+    dest_relative_path = os.path.join(user_image_folder, output_file_name)
+    dest_store_path = os.path.join(constants.STATIC_PREFIX, dest_relative_path)
+    temp_file_path = os.path.join(constants.TEMP_FOLDER, output_file_name)
+
+    # make directory if not exist to prevent issue
     if not os.path.exists(user_image_folder):
         os.makedirs(user_image_folder)
-    dest_path = os.path.join(user_image_folder, output_file_name)
-    temp_file_path = os.path.join(constants.TEMP_FOLDER, output_file_name)
+    if not os.path.exists(constants.TEMP_FOLDER):
+        os.makedirs(constants.TEMP_FOLDER)
+
     try:
         # store the original file and do the detection
         open(temp_file_path, 'wb').write(file_data)
-        output_info = pytorch_infer.main(temp_file_path, dest_path)
+        output_info = pytorch_infer.main(temp_file_path, dest_store_path)
         os.remove(temp_file_path)
 
         # insert the record into the SQL DB
@@ -102,7 +108,7 @@ def upload_file(file_data):
         sql_stmt = '''
         INSERT INTO image (image_id, image_path, category, num_faces, num_masked, num_unmasked, username) 
         VALUES ("{}", "{}", {}, {}, {}, {}, "{}")
-        '''.format(image_id, dest_path, classify_image_category(mask_info), mask_info.get("num_faces", 0),
+        '''.format(image_id, dest_relative_path, classify_image_category(mask_info), mask_info.get("num_faces", 0),
                    mask_info.get("num_masked", 0), mask_info.get("num_unmasked", 0), g.user[constants.USERNAME])
         cursor = db_conn.cursor()
         cursor.execute(sql_stmt)

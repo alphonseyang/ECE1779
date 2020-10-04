@@ -1,6 +1,5 @@
 {% extends 'base_header.html' %}
 
 {% block content %}
-<p>{{image_record[0]}}</p>
-<img src="{{url_for('static', filename=image_record[0])}}" width="500" height="600">
+<img src="{{url_for('static', filename=image_record[0])}}" height="600">
 {% endblock %}
