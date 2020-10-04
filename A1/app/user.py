@@ -18,9 +18,12 @@ def user_management():
 @login_required
 def user_profile(username):
     if request.method == 'POST':
-        old_password = request.form['old_password']
-        new_password = request.form['new_password']
-        new_password_confirm = request.form['new_password_confirm']
+        old_password = request.form.get('old_password')
+        new_password = request.form.get('new_password')
+        new_password_confirm = request.form.get('new_password_confirm')
+        if not old_password or not new_password or not new_password_confirm:
+            flash("Please provide old password, new password and confirm new password when change password")
+            return redirect(request.url)
 
         # TODO: verify the password satifsfy a specific format
         if new_password != new_password_confirm:

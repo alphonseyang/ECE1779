@@ -11,8 +11,12 @@ bp = Blueprint('login', __name__, url_prefix='/login')
 @bp.route('/', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if not username or not password:
+            flash("Please provide both username and password when login")
+            return redirect(request.url)
+
         error = authenticate(username, password)
         if not error:
             return redirect(url_for("detection.detect"))
