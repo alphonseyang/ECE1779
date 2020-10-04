@@ -14,7 +14,7 @@ INSERT INTO user (username, password, role) VALUES ("root", "root", "admin");
 INSERT INTO user (username, password, role) VALUES ("user1", "user1", "user");
 
 CREATE TABLE image (
-    image_id int NOT NULL AUTO_INCREMENT,
+    image_id varchar(255) NOT NULL,
     image_path varchar(255) NOT NULL,
     category int NOT NULL,
     num_faces int NOT NULL,

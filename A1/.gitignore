@@ -1,6 +1,5 @@
 venv/*
 .idea/*
-FaceMaskDetection/test/
 app/__pycache__/*
 .DS_Store
 app/.DS_Store
@@ -10,3 +9,4 @@ FaceMaskDetection/load_model/__pycache__/*
 FaceMaskDetection/models/__pycache__/*
 FaceMaskDetection/utils/__pycache__/*
 app/api/__pycache__/*
+app/static/images/*

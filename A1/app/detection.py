@@ -1,8 +1,8 @@
 import os
 from datetime import datetime
-
+import uuid
 import requests
-from flask import Blueprint, flash, g, render_template, request, redirect
+from flask import Blueprint, flash, g, render_template, request, redirect, url_for
 
 from FaceMaskDetection import pytorch_infer
 from app import constants
@@ -43,9 +43,12 @@ def detect():
                 return redirect(request.url)
 
         # pass all check, upload the file
-        msg, _ = upload_file(file_data)
+        msg, output_info, image_id = upload_file(file_data)
         flash(msg)
-        return redirect(request.url)
+        if output_info and image_id:
+            return redirect(url_for("detection.show_image", image_id=image_id))
+        else:
+            return redirect(request.url)
 
     return render_template("detection/detection.html")
 
@@ -53,19 +56,40 @@ def detect():
 @bp.route("/<image_id>")
 @login_required
 def show_image(image_id):
-    # TODO: get image based on the id
-    # TODO: render the show view
-    return ''
+    try:
+        sql_stmt = '''
+        SELECT image_path, category, num_faces, num_masked, num_unmasked, username FROM image
+        WHERE image_id="{}"
+        '''.format(image_id)
+        cursor = db_conn.cursor()
+        cursor.execute(sql_stmt)
+        image_record = cursor.fetchone()
+
+        # if not found
+        if not image_record:
+            flash("Couldn't find the image")
+            return redirect(request.url)
+
+        # prevent unwanted access from other user
+        if image_record[-1] != g.user[constants.USERNAME]:
+            flash("Not allowed to access the image uploaded by other user")
+            return redirect(request.url)
+
+    except Exception as e:
+        flash("Unexpected exception {}".format(e))
+        return redirect(request.url)
+
+    return render_template("detection/show.html", image_record=image_record)
 
 
 # main logic to upload file and save records
 def upload_file(file_data):
     output_info = None
-    output_file_name = generate_file_name()
+    output_file_name, image_id = generate_file_name()
     user_image_folder = constants.DEST_FOLDER + g.user[constants.USERNAME] + "/"
     if not os.path.exists(user_image_folder):
         os.makedirs(user_image_folder)
-    dest_path = user_image_folder + output_file_name
+    dest_path = os.path.join(user_image_folder, output_file_name)
     temp_file_path = os.path.join(constants.TEMP_FOLDER, output_file_name)
     try:
         # store the original file and do the detection
@@ -76,9 +100,9 @@ def upload_file(file_data):
         # insert the record into the SQL DB
         mask_info = extract_mask_info(output_info)
         sql_stmt = '''
-        INSERT INTO image (image_path, category, num_faces, num_masked, num_unmasked, username) 
-        VALUES ("{}", {}, {}, {}, {}, "{}")
-        '''.format(dest_path, classify_image_category(mask_info), mask_info.get("num_faces", 0),
+        INSERT INTO image (image_id, image_path, category, num_faces, num_masked, num_unmasked, username) 
+        VALUES ("{}", "{}", {}, {}, {}, {}, "{}")
+        '''.format(image_id, dest_path, classify_image_category(mask_info), mask_info.get("num_faces", 0),
                    mask_info.get("num_masked", 0), mask_info.get("num_unmasked", 0), g.user[constants.USERNAME])
         cursor = db_conn.cursor()
         cursor.execute(sql_stmt)
@@ -88,14 +112,15 @@ def upload_file(file_data):
         msg = "Unexpected error {}".format(e)
     else:
         msg = "Successfully detected file"
-    return msg, output_info
+    return msg, output_info, image_id
 
 
 # generate file name based on the current user name and time
 def generate_file_name():
     username = g.user[constants.USERNAME]
-    file_name = "{}-{}.jpeg".format(datetime.now(), username)
-    return file_name
+    image_id = uuid.uuid4().hex
+    file_name = "{}-{}-{}.jpeg".format(datetime.now(), username, image_id)
+    return file_name, image_id
 
 
 # check file to ensure the sizing and format
@@ -107,6 +132,7 @@ def allowed_file(is_local, file_name=None, file_size=0, data_type=''):
         return '/' in data_type and data_type.split('/')[1].lower() in constants.ALLOWED_EXTENSIONS
 
 
+# extract the mask info from the AI output
 def extract_mask_info(output_info):
     return {
         "num_faces": len(output_info),
