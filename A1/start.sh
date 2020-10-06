@@ -13,4 +13,4 @@ mkdir -p logs
 # start the flask app using the factory mode
 # with the env set to production and localhost:5000
 # set up the access log and error log accordingly
-./venv/bin/gunicorn -w 1 "app:create_app()" -e FLASK_ENV=production --bind 0.0.0.0:5000 --workers=1 --access-logfile logs/access.log --error-logfile logs/error.log
+./venv/bin/gunicorn -w 1 "app:create_app()" -e FLASK_ENV=production -b 0.0.0.0:5000 --access-logfile logs/access.log --error-logfile logs/error.log
