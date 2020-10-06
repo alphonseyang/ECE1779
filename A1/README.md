@@ -20,4 +20,4 @@
 4. ssh -i ~/.ssh/ECE1779A1KuangWangYang.pem ubuntu@{IP_ADDRESS} -L 5901:localhost:5901 (this for if you want to connect via VNC)
 5. Download VNC Viewer (VNC Viewer, Putty, Tiger VNC or etc.) localhost:5901, password: ecc1779pass
 
-currently the IP_Address for EC2 instance is 54.165.66.86
+currently the IP_Address for EC2 instance is 54.224.218.228
