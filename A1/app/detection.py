@@ -92,8 +92,8 @@ def upload_file(file_data):
     temp_file_path = os.path.join(constants.TEMP_FOLDER, output_file_name)
 
     # make directory if not exist to prevent issue
-    if not os.path.exists(user_image_folder):
-        os.makedirs(user_image_folder)
+    if not os.path.exists(os.path.join(constants.STATIC_PREFIX, user_image_folder)):
+        os.makedirs(os.path.join(constants.STATIC_PREFIX, user_image_folder))
     if not os.path.exists(constants.TEMP_FOLDER):
         os.makedirs(constants.TEMP_FOLDER)
 

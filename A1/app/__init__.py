@@ -24,7 +24,7 @@ def create_app():
 
     # initialize the database connection
     from app import database
-    database.init_db()
+    database.init_db(app.config["ENV"])
 
     # register the blueprint to associate with a separate file and path
     from app import api
