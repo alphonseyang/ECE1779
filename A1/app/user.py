@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request
+from flask import Blueprint, flash, redirect, render_template, request,url_for
 
 from app.database import db_conn
 from app.login import login_required, login_admin_required, generate_hashed_password
@@ -11,7 +11,11 @@ bp = Blueprint('user', __name__, url_prefix='/user')
 @login_admin_required
 def user_management():
     # TODO: show a list of user and can click to view user profile
-    return "user management"
+    cursor = db_conn.cursor()
+    sql_stmt = "SELECT username FROM user WHERE role='user'"
+    cursor.execute(sql_stmt)
+    user = [i[0] for i in cursor.fetchall()]
+    return render_template("user/user_management.html", users=user)
 
 
 @bp.route("/<username>", methods=('GET', 'POST'))
@@ -56,3 +60,24 @@ def user_profile(username):
     return render_template("user/profile.html", username=username)
 
 
+@bp.route("/deleteuser", methods=['POST'])
+@login_required
+@login_admin_required
+def delete_user():
+    cursor = db_conn.cursor()
+    if request.method == 'POST':
+        user = request.form.get('user')
+    try:
+        sql_stmt = "SELECT * FROM user WHERE username='{}'".format(user)
+        cursor.execute(sql_stmt)
+        username = cursor.fetchone()
+        if not username:
+            flash("no user exist")
+            return redirect(url_for('user.user_management'))
+    except Exception as e:
+        flash("Unexpected error {}".format(e))
+        return redirect(url_for('user.user_management'))
+    sql_stmt = "DELETE FROM user WHERE username='{}'".format(user)
+    cursor.execute(sql_stmt)
+    db_conn.commit()
+    return redirect(url_for('user.user_management'))
