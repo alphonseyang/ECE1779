@@ -5,14 +5,14 @@ from flask import Blueprint, flash, g, redirect, render_template, request, sessi
 from app import constants
 from app.database import db_conn
 
-bp = Blueprint('login', __name__, url_prefix='/login')
+bp = Blueprint("login", __name__, url_prefix="/login")
 
 
-@bp.route('/', methods=('GET', 'POST'))
+@bp.route("/", methods=("GET", "POST"))
 def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
         if not username or not password:
             flash("Please provide both username and password when login")
             return redirect(request.url)
@@ -24,16 +24,16 @@ def login():
             flash(error)
             return redirect(request.url)
 
-    return render_template('login/login.html')
+    return render_template("login/login.html")
 
 
-@bp.route('/password_change', methods=['POST'])
+@bp.route("/password_change", methods=["POST"])
 def password_recovery():
     # TODO: hwo to recover?
     return ""
 
 
-@bp.route('/logout', methods=['POST'])
+@bp.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return redirect(url_for("login.login"))
@@ -41,7 +41,7 @@ def logout():
 
 @bp.before_app_request
 def load_logged_in_user():
-    username = session.get('username')
+    username = session.get("username")
     # TODO: this may not be needed, since we can only use session.get('username')
     #       to check in the login_required, avoid unnecessary SQL queries
     #       https://stackoverflow.com/questions/32909851/flask-session-vs-g#:~:text=session%20gives%20you%20a%20place,base%20within%20one%20request%20cycle.
@@ -60,7 +60,7 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
-            return redirect(url_for('login.login'))
+            return redirect(url_for("login.login"))
         return view(**kwargs)
 
     return wrapped_view
@@ -72,7 +72,7 @@ def login_admin_required(view):
     def wrapped_view(**kwargs):
         if g.user is None or g.user[constants.ROLE] == constants.USER:
             flash("You don't have permission to access user management page")
-            return redirect(url_for('detection.detect'))
+            return redirect(url_for("detection.detect"))
         return view(**kwargs)
 
     return wrapped_view

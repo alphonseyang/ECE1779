@@ -7,9 +7,9 @@ from app.login import authenticate
 
 
 def work():
-    username = request.form.get('username')
-    password = request.form.get('password')
-    file = request.files.get('file')
+    username = request.form.get("username")
+    password = request.form.get("password")
+    file = request.files.get("file")
     response = {"success": False}
     status_code = HTTPStatus.BAD_REQUEST
 

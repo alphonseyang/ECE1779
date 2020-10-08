@@ -9,37 +9,39 @@ from app import constants
 from app.database import db_conn
 from app.login import login_required
 
-bp = Blueprint('detection', __name__, url_prefix='/detection')
+bp = Blueprint("detection", __name__, url_prefix="/detection")
 
 
 # main detection method that calls the AI part and save records
-@bp.route('/', methods=('GET', 'POST'))
+@bp.route("/", methods=("GET", "POST"))
 @login_required
 def detect():
     if request.method == "POST":
         # ensure image is provided
-        if 'file' not in request.files and 'online_file' not in request.form:
+        if "file" not in request.files and "online_file" not in request.form:
             flash("No file or URL provided")
             return redirect(request.url)
 
         # determine which type of upload
-        if 'file' in request.files and request.files['file'].filename != '':
-            file = request.files['file']
+        if "file" in request.files and request.files["file"].filename != "":
+            file = request.files["file"]
             file_name = file.filename
             file_data = file.read()
-            if not allowed_file(True, file_name=file_name, file_size=len(file_data)):
+            error = allowed_file(True, file_name=file_name, file_size=len(file_data))
+            if error:
                 flash("Image doesn't meet the requirement")
                 return redirect(request.url)
         else:
-            url = request.form['url']
+            url = request.form["url"]
             response = requests.get(url)
-            data_type = response.headers.get('content-type')
+            data_type = response.headers.get("content-type")
             if not response.ok:
                 flash("Online image doesn't exist")
                 return redirect(request.url)
             file_data = response.content
-            if not allowed_file(False, data_type=data_type, file_size=len(file_data)):
-                flash("File doesn't meet the requirement")
+            error = allowed_file(False, data_type=data_type, file_size=len(file_data))
+            if error:
+                flash(error)
                 return redirect(request.url)
 
         # pass all check, upload the file
@@ -99,7 +101,7 @@ def upload_file(file_data):
 
     try:
         # store the original file and do the detection
-        open(temp_file_path, 'wb').write(file_data)
+        open(temp_file_path, "wb").write(file_data)
         output_info = pytorch_infer.main(temp_file_path, dest_store_path)
         os.remove(temp_file_path)
 
@@ -130,12 +132,14 @@ def generate_file_name():
 
 
 # check file to ensure the sizing and format
-def allowed_file(is_local, file_name=None, file_size=0, data_type=''):
-    # TODO: check file size as well
-    if is_local:
-        return '.' in file_name and file_name.rsplit('.', 1)[1].lower() in constants.ALLOWED_EXTENSIONS
-    else:
-        return '/' in data_type and data_type.split('/')[1].lower() in constants.ALLOWED_EXTENSIONS
+def allowed_file(is_local, file_name=None, file_size=0, data_type=""):
+    if file_size > constants.TEN_MB:
+        return "File size too large, please upload file smaller than 10 MB"
+    if is_local and not ("." in file_name and file_name.rsplit(".", 1)[1].lower() in constants.ALLOWED_EXTENSIONS):
+        return "Local file is not an image"
+    elif not is_local and not ("/" in data_type and data_type.split("/")[1].lower() in constants.ALLOWED_EXTENSIONS):
+        return "Online link is not an image"
+    return None
 
 
 # extract the mask info from the AI output

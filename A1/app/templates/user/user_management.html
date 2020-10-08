@@ -2,19 +2,19 @@
 
 {% block content %}
 <h1>User Management</h1>
-<form action="{{url_for('user.delete_user')}}" method="post">
-    <label for="user"> Select a user: </label>
-        <select name="user" id="user">
+<form action="/user/delete" method="post">
+    <label for="delete_user"> Select a user: </label>
+        <select name="username" id="delete_user">
             {%for value in users%}
                 <option value={{value}}>{{value}}</option>
             {%endfor%}
          </select>
-    <input type="submit" value="Delete Account">
+    <input type="submit" value="Delete">
 </form>
-<h2>Register</h2>
-<form action="{{ '/api/register/user'}}" method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
+<h2>Create New Account</h2>
+<form action="{{ '/user/create'}}" method="post">
+    <label for="create_user">Username</label>
+    <input name="username" id="create_user" required>
     <label for="password">Password</label>
     <input type="password" name="password" id="password" required>
 <!--    <label for="roles">Choose a role:</label>-->
@@ -22,6 +22,6 @@
 <!--            <option value="user">User</option>-->
 <!--            <option value="admin">Admin</option>-->
 <!--        </select>-->
-    <input type="submit" value="Register">
+    <input type="submit" value="Create">
 </form>
 {% endblock %}

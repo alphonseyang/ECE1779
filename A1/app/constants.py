@@ -8,6 +8,7 @@ ROLE = 2
 ADMIN = "admin"
 USER = "user"
 RESERVED_NAMES = {"temp", "test", "root"}
+TEN_MB = 1048576
 
 # constants for photo categories
 NO_FACES_DETECTED = 0
