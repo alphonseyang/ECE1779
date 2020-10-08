@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 
 from app import constants
 from app.api import register_worker
@@ -22,6 +22,7 @@ def user_management():
 @bp.route("/<username>", methods=("GET", "POST"))
 @login_required
 def user_profile(username):
+    # for POST method, only used for password change
     if request.method == "POST":
         old_password = request.form.get("old_password")
         new_password = request.form.get("new_password")
@@ -38,6 +39,7 @@ def user_profile(username):
             flash("New password is the same as old password, please change")
             return redirect(request.url)
 
+        # make queries to the SQL DB to modify the user record
         try:
             cursor = db_conn.cursor()
             hash_pwd = generate_hashed_password(old_password)
@@ -47,7 +49,6 @@ def user_profile(username):
             if not user:
                 flash("Incorrect password")
                 return redirect(request.url)
-
             new_hash_pwd = generate_hashed_password(new_password)
             sql_stmt = "UPDATE user SET password='{}' WHERE username='{}'".format(new_hash_pwd, username)
             cursor.execute(sql_stmt)
@@ -57,8 +58,15 @@ def user_profile(username):
             return redirect(request.url)
         else:
             flash("Password is updated successfully")
+            return render_template("user/profile.html", username=username)
 
-    return render_template("user/profile.html", username=username)
+    # for GET method, user only allows to access their own profile
+    else:
+        if g.user[constants.USERNAME] == username:
+            return render_template("user/profile.html", username=username)
+        else:
+            flash("Cannot access other user's profile")
+            return redirect(url_for("detection.detect"))
 
 
 @bp.route("/create", methods=["POST"])
@@ -78,19 +86,19 @@ def create_user():
 @login_admin_required
 def delete_user():
     cursor = db_conn.cursor()
-    if request.method == "DELETE":
-        username = request.form.get("username")
-        try:
-            sql_stmt = "SELECT * FROM user WHERE username='{}'".format(username)
-            cursor.execute(sql_stmt)
-            user = cursor.fetchone()
-            if not username:
-                flash("no user exist in the database")
-                return redirect(url_for("user.user_management"))
-        except Exception as e:
-            flash("Unexpected error {}".format(e))
+    username = request.form.get("username")
+    try:
+        sql_stmt = "SELECT * FROM user WHERE username='{}'".format(username)
+        cursor.execute(sql_stmt)
+        if not cursor.fetchone():
+            flash("no user exist in the database")
             return redirect(url_for("user.user_management"))
-        sql_stmt = "DELETE FROM user WHERE username='{}'".format(user)
+        sql_stmt = "DELETE FROM user WHERE username='{}'".format(username)
         cursor.execute(sql_stmt)
         db_conn.commit()
-    return redirect(url_for("user.user_management"))
+    except Exception as e:
+        flash("Unexpected error {}".format(e))
+        return redirect(url_for("user.user_management"))
+    else:
+        flash("Successfully deleted user with username {}".format(username))
+        return redirect(url_for("user.user_management"))

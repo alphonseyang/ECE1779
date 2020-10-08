@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>User Management</h1>
-<form action="/user/delete" method="post">
+<form action="{{ '/user/delete' }}" method="post">
     <label for="delete_user"> Select a user: </label>
         <select name="username" id="delete_user">
             {%for value in users%}
