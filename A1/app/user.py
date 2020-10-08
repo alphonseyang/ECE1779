@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request,url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from app.database import db_conn
 from app.login import login_required, login_admin_required, generate_hashed_password
@@ -72,7 +72,7 @@ def delete_user():
         cursor.execute(sql_stmt)
         username = cursor.fetchone()
         if not username:
-            flash("no user exist")
+            flash("no user exist in the database")
             return redirect(url_for('user.user_management'))
     except Exception as e:
         flash("Unexpected error {}".format(e))

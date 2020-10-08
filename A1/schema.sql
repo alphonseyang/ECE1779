@@ -7,7 +7,7 @@ CREATE TABLE user (
     password varchar(255) NOT NULL,
     role varchar(255) NOT NULL,
     PRIMARY KEY (username)
-);
+)ENGINE=InnoDB;
 
 -- create initial admin/user users to start
 INSERT INTO user (username, password, role) VALUES ("root", "root", "admin");
@@ -24,4 +24,5 @@ CREATE TABLE image (
     created_at timestamp default current_timestamp,
     PRIMARY KEY (image_id),
     FOREIGN KEY (username) REFERENCES user(username)
-);
+    ON DELETE CASCADE
+)ENGINE=InnoDB;

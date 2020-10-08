@@ -1,5 +1,5 @@
 
-from flask import Blueprint
+from flask import Blueprint, url_for, redirect
 
 from app.api import register_worker, upload_worker
 
@@ -14,3 +14,10 @@ def register():
 @bp.route("/upload", methods=['POST'])
 def upload():
     return upload_worker.work()
+
+
+@bp.route("/register/user", methods=['POST'])
+def registeruser():
+    register()
+    return redirect(url_for('user.user_management'))
+

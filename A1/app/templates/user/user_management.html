@@ -11,8 +11,8 @@
          </select>
     <input type="submit" value="Delete Account">
 </form>
-<h2>Create User</h2>
-<form action="{{ '/api/register'}}" method="post">
+<h2>Register</h2>
+<form action="{{ '/api/register/user'}}" method="post">
     <label for="username">Username</label>
     <input name="username" id="username" required>
     <label for="password">Password</label>
@@ -22,6 +22,6 @@
 <!--            <option value="user">User</option>-->
 <!--            <option value="admin">Admin</option>-->
 <!--        </select>-->
-    <input type="submit" value="Create Account">
+    <input type="submit" value="Register">
 </form>
 {% endblock %}
