@@ -35,6 +35,7 @@ def work():
         if cursor.fetchone() is not None:
             response["error"] = {"code": "UserAlreadyExists",
                                  "message": "Username is already registered"}
+            db_conn.rollback()
             return response, status_code
 
         # TODO: hash password

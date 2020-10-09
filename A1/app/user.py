@@ -16,6 +16,7 @@ def user_management():
     sql_stmt = "SELECT username FROM user WHERE role='{}'".format(constants.USER)
     cursor.execute(sql_stmt)
     user = [i[0] for i in cursor.fetchall()]
+    db_conn.rollback()
     return render_template("user/user_management.html", users=user)
 
 
@@ -47,6 +48,7 @@ def user_profile(username):
             cursor.execute(sql_stmt)
             user = cursor.fetchone()
             if not user:
+                db_conn.rollback()
                 flash("Incorrect password")
                 return redirect(request.url)
             new_hash_pwd = generate_hashed_password(new_password)
@@ -91,6 +93,7 @@ def delete_user():
         sql_stmt = "SELECT * FROM user WHERE username='{}'".format(username)
         cursor.execute(sql_stmt)
         if not cursor.fetchone():
+            db_conn.rollback()
             flash("no user exist in the database")
             return redirect(url_for("user.user_management"))
         sql_stmt = "DELETE FROM user WHERE username='{}'".format(username)

@@ -8,6 +8,7 @@ from app.database import db_conn
 bp = Blueprint("login", __name__, url_prefix="/login")
 
 
+# TODO: direct the main page to detection is logged in else to login page
 @bp.route("/", methods=("GET", "POST"))
 def login():
     if request.method == "POST":
@@ -21,6 +22,7 @@ def login():
         if not error:
             return redirect(url_for("detection.detect"))
         else:
+            # TODO: show the flash in the view
             flash(error)
             return redirect(request.url)
 
@@ -42,10 +44,6 @@ def logout():
 @bp.before_app_request
 def load_logged_in_user():
     username = session.get("username")
-    # TODO: this may not be needed, since we can only use session.get('username')
-    #       to check in the login_required, avoid unnecessary SQL queries
-    #       https://stackoverflow.com/questions/32909851/flask-session-vs-g#:~:text=session%20gives%20you%20a%20place,base%20within%20one%20request%20cycle.
-    #       will need more investigation, but this is workable
     if username is None:
         g.user = None
     else:
@@ -53,6 +51,7 @@ def load_logged_in_user():
         cursor.execute("SELECT * FROM user WHERE username='{}'".format(username))
         user = cursor.fetchone()
         g.user = user
+        db_conn.rollback()
 
 
 # decorator method that force all not signed request to jump back to login page
@@ -85,6 +84,7 @@ def authenticate(username, password):
         sql_stmt = "SELECT * FROM user WHERE username='{}' AND password='{}'".format(username, hash_pwd)
         cursor.execute(sql_stmt)
         user = cursor.fetchone()
+        db_conn.rollback()
     except Exception as e:
         error = "Unexpected error {}".format(e)
     else:
