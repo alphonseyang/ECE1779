@@ -10,6 +10,18 @@
     <input type="password" name="new_password" id="newPassword" required><br>
     <label for="newPasswordConfirm">Confirm New Password</label>
     <input type="password" name="new_password_confirm" id="newPasswordConfirm" required><br>
-    <button name="changePasswordBtn" type="submit">Change Password</button>
+    <input name="changePasswordBtn" type="submit" value="Change Password" />
+</form>
+<p>Security Questions: What is your Date of Birth?</p>
+<form action="{{ '/user/{}'.format(username) }}" method="post">
+    {%if security_answer == True %}
+    <label for="oldsecurityAnswer">Old Security Answer:</label>
+    <input type="password" name="old_securityAnswer" id="oldsecurityAnswer" required><br>
+    {% endif %}
+    <label for="newsecurityAnswer">New Security Answer</label>
+    <input type="password" name="new_securityAnswer" id="newsecurityAnswer" required><br>
+    <label for="newPasswordConfirm">Confirm New Security Answer</label>
+    <input type="password" name="new_securityAnswer_confirm" id="newsecurityAnswerConfirm" required><br>
+    <input name="changeSecurityAnswerBtn" type="submit" value="Change Security Answer"/>
 </form>
 {% endblock %}
