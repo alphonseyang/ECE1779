@@ -45,16 +45,17 @@ def password_recovery():
             cursor.execute(sql_stmt)
             user = cursor.fetchone()
             if not user:
-                db_conn.rollback()
+                db_conn.commit()
                 flash("non existed user")
                 return redirect(request.url)
-            if user[4] != 0:
+            if user[constants.MODIFIED_ANSWER] != 0:
                 ans = generate_hashed_password(security_answer)
+                # TODO: just compare the hashed value from DB with your generated hashed value, no need to query again
                 sql_stmt = "SELECT * FROM user WHERE username='{}' AND  security_answer='{}'".format(username, ans)
                 cursor.execute(sql_stmt)
                 user = cursor.fetchone()
                 if not user:
-                    db_conn.rollback()
+                    db_conn.commit()
                     flash("Incorrect security answer")
                     return redirect(request.url)
             new_pwd = generate_hashed_password(password)
@@ -87,7 +88,7 @@ def load_logged_in_user():
         cursor.execute("SELECT * FROM user WHERE username='{}'".format(username))
         user = cursor.fetchone()
         g.user = user
-        db_conn.rollback()
+        db_conn.commit()
 
 
 # decorator method that force all not signed request to jump back to login page
@@ -120,7 +121,7 @@ def authenticate(username, password):
         sql_stmt = "SELECT * FROM user WHERE username='{}' AND password='{}'".format(username, hash_pwd)
         cursor.execute(sql_stmt)
         user = cursor.fetchone()
-        db_conn.rollback()
+        db_conn.commit()
     except Exception as e:
         error = "Unexpected error {}".format(e)
     else:

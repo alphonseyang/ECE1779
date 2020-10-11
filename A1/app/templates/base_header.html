@@ -12,7 +12,7 @@
             <a href="{{url_for('user.user_management')}}">Users</a>
             {% endif %}
             <a href="{{url_for('user.user_profile', username=g.user[0])}}">Profile</a>
-            <form action="/login/logout", method="post">
+            <form action="/login/logout" method="post">
                 <button name="logoutBtn" type="submit">Log Out</button>
             </form>
         </div>

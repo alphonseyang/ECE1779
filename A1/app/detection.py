@@ -66,7 +66,7 @@ def show_image(image_id):
         cursor = db_conn.cursor()
         cursor.execute(sql_stmt)
         image_record = cursor.fetchone()
-        db_conn.rollback()
+        db_conn.commit()
 
         # if not found
         if not image_record:
