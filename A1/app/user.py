@@ -65,7 +65,7 @@ def user_profile(username):
 
         if request.form.get('changeSecurityAnswerBtn'):
             modified_default = False
-            if g.user[constants.SECURITY_ANSWER] != 'default':
+            if g.user[constants.MODIFIED_ANSWER] != 0:
                 modified_default = True
                 old_securityanswer = request.form.get("old_securityAnswer")
                 if not old_securityanswer:
@@ -104,12 +104,12 @@ def user_profile(username):
     # for GET method, user only allows to access their own profile
     else:
         if g.user[constants.USERNAME] == username:
-            modified_question = False
-            if g.user[constants.SECURITY_ANSWER] == 'default':
-                return render_template("user/profile.html", username=username, security_answer=modified_question)
+            modified_answer = False
+            if g.user[constants.MODIFIED_ANSWER] == 0:
+                return render_template("user/profile.html", username=username, security_answer=modified_answer)
             else:
-                modified_question = True
-                return render_template("user/profile.html", username=username, security_answer=modified_question)
+                modified_answer = True
+                return render_template("user/profile.html", username=username, security_answer=modified_answer)
         else:
             flash("Cannot access other user's profile")
             return redirect(url_for("detection.detect"))

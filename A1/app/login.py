@@ -29,10 +29,46 @@ def login():
     return render_template("login/login.html")
 
 
-@bp.route("/password_change", methods=["POST"])
+@bp.route("/password_change", methods=("GET", "POST"))
 def password_recovery():
-    # TODO: hwo to recover?
-    return ""
+    if request.method == "POST":
+        username = request.form.get("username")
+        security_answer = request.form.get("securityanswer")
+        password = request.form.get("password")
+        if not username or not password or not security_answer:
+            flash("Please provide all the required fields to recover your passwords")
+            return redirect(request.url)
+        # make queries to the SQL DB to modify the user record
+        try:
+            cursor = db_conn.cursor()
+            sql_stmt = "SELECT * FROM user WHERE username='{}'".format(username)
+            cursor.execute(sql_stmt)
+            user = cursor.fetchone()
+            if not user:
+                db_conn.rollback()
+                flash("non existed user")
+                return redirect(request.url)
+            if user[4] != 0:
+                ans = generate_hashed_password(security_answer)
+                sql_stmt = "SELECT * FROM user WHERE username='{}' AND  security_answer='{}'".format(username, ans)
+                cursor.execute(sql_stmt)
+                user = cursor.fetchone()
+                if not user:
+                    db_conn.rollback()
+                    flash("Incorrect security answer")
+                    return redirect(request.url)
+            new_pwd = generate_hashed_password(password)
+            sql_stmt = "UPDATE user SET password='{}' WHERE username='{}'".format(new_pwd, username)
+            cursor.execute(sql_stmt)
+            db_conn.commit()
+        except Exception as e:
+            flash("Unexpected error {}".format(e))
+            return redirect(request.url)
+        else:
+            flash("security answer is updated successfully")
+            modified_default = True
+            return render_template("login/login.html")
+    return render_template("login/password_recovery.html")
 
 
 @bp.route("/logout", methods=["POST"])

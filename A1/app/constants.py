@@ -3,6 +3,7 @@ USERNAME = 0
 PASSWORD = 1
 ROLE = 2
 SECURITY_ANSWER = 3
+MODIFIED_ANSWER = 4
 
 
 # constants for role types

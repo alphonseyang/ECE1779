@@ -7,6 +7,7 @@ CREATE TABLE user (
     password varchar(255) NOT NULL,
     role varchar(255) NOT NULL,
     security_answer varchar(255) default 'default',
+    modified_answer int NOT NULL default 0,
     PRIMARY KEY (username)
 )ENGINE=InnoDB;
 
