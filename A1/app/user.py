@@ -147,7 +147,7 @@ def change_security_answer(username):
                 return redirect(request.url)
             if new_hash_pwd == ans:
                 db_conn.commit()
-                flash("Please make sure that new security answer is different from old security answer")
+                flash("Please make sure that new security answer is different from old security answer", constants.ERROR)
                 return redirect(request.url)
         sql_stmt = "UPDATE user SET security_answer='{}' WHERE username='{}'".format(new_hash_pwd, username)
         cursor.execute(sql_stmt)
@@ -158,6 +158,6 @@ def change_security_answer(username):
         flash("Unexpected error {}".format(e), constants.ERROR)
         return redirect(request.url)
     else:
-        flash("Security answer is updated successfully", constants.ERROR)
+        flash("Security answer is updated successfully", constants.INFO)
         modified_default = True
         return render_template("user/profile.html", username=username, security_answer=modified_default)

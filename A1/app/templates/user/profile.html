@@ -14,21 +14,27 @@
                     <h6 class="card-title text-center">User Name: {{ username }}</h6>
                     <form class="form-signin" method="post" action="{{ '/user/{}'.format(username) }}">
                         <div class="form-label-group">
-                            <input type="password" id="oldPassword" class="form-control" placeholder="Old Password" name="old_password"
+                            <input type="password" id="oldPassword" class="form-control" placeholder="Old Password"
+                                   name="old_password"
                                    required>
                             <br>
                         </div>
                         <div class="form-label-group">
-                            <input type="password" id="newPassword" class="form-control" placeholder="New Password" name="new_password"
+                            <input type="password" id="newPassword" class="form-control" placeholder="New Password"
+                                   name="new_password"
                                    required>
                             <br>
                         </div>
                         <div class="form-label-group">
-                            <input type="password" id="newPasswordConfirm" class="form-control" placeholder=" Confirm New Password" name="new_password_confirm"
+                            <input type="password" id="newPasswordConfirm" class="form-control"
+                                   placeholder=" Confirm New Password" name="new_password_confirm"
                                    required>
                             <br>
                         </div>
-                        <input class="btn btn-lg btn-primary btn-block text-uppercase" type="submit" name="changePasswordBtn" value="Change">
+                        <div class="form-label-group text-center">
+                            <input class="btn btn-primary text-uppercase" type="submit" name="changePasswordBtn"
+                                   value="Change">
+                        </div>
                         <hr class="my-4">
                     </form>
 
@@ -45,22 +51,28 @@
                     <form class="form-signin" method="post" action="{{ '/user/{}'.format(username) }}">
                         {%if security_answer %}
                         <div class="form-label-group">
-                            <input type="password" id="oldsecurityAnswer" class="form-control" placeholder="Old Security Answer" name="old_securityAnswer"
+                            <input type="password" id="oldsecurityAnswer" class="form-control"
+                                   placeholder="Old Security Answer" name="old_securityAnswer"
                                    required>
                             <br>
                         </div>
                         {% endif %}
                         <div class="form-label-group">
-                            <input type="password" id="newsecurityAnswer" class="form-control" placeholder="New Security Answer" name="new_securityAnswer"
+                            <input type="password" id="newsecurityAnswer" class="form-control"
+                                   placeholder="New Security Answer" name="new_securityAnswer"
                                    required>
                             <br>
                         </div>
                         <div class="form-label-group">
-                            <input type="password" id="newsecurityAnswerConfirm" class="form-control" placeholder="Confirm New Security Answer" name="new_securityAnswer_confirm"
+                            <input type="password" id="newsecurityAnswerConfirm" class="form-control"
+                                   placeholder="Confirm New Security Answer" name="new_securityAnswer_confirm"
                                    required>
                             <br>
                         </div>
-                        <input class="btn btn-lg btn-primary btn-block text-uppercase" type="submit" name="changeSecurityAnswerBtn" value="Change">
+                        <div class="form-label-group text-center">
+                            <input class="btn btn-primary text-uppercase" type="submit"
+                                   name="changeSecurityAnswerBtn" value="Create">
+                        </div>
                         <hr class="my-4">
                     </form>
 

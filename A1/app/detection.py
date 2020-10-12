@@ -146,10 +146,12 @@ def allowed_file(is_local, file_name=None, file_size=0, data_type=""):
 
 # extract the mask info from the AI output
 def extract_mask_info(output_info):
+    num_faces = len(output_info)
+    num_masked = sum([1 for face in output_info if face[0] == 0])
     return {
-        "num_faces": len(output_info),
-        "num_masked": sum([1 for face in output_info if face[0] == 1]),
-        "num_unmasked": sum([1 for face in output_info if face[0] == 0])
+        "num_faces": num_faces,
+        "num_masked": num_masked,
+        "num_unmasked": num_faces - num_masked
     }
 
 
