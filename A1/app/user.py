@@ -33,7 +33,7 @@ def user_profile(username):
     # for GET method, user only allows to access their own profile
     else:
         if g.user[constants.USERNAME] == username:
-            modified_answer = False if g.user[constants.MODIFIED_ANSWER] == 0 else True
+            modified_answer = False if not g.user[constants.MODIFIED_ANSWER] else True
             return render_template("user/profile.html", username=username, security_answer=modified_answer)
         else:
             flash("Cannot access other user's profile", constants.ERROR)
@@ -119,9 +119,8 @@ def change_password(username):
 # helper method for the change security answer logic
 def change_security_answer(username):
     modified_default = False
-    # TODO: MODIFIED_ANSWER is not modified when updating the default answer
     # need to have old answer if modified previously
-    if g.user[constants.MODIFIED_ANSWER] != 0:
+    if g.user[constants.MODIFIED_ANSWER]:
         modified_default = True
         old_securityanswer = request.form.get("old_securityAnswer")
         if not old_securityanswer:
@@ -138,18 +137,21 @@ def change_security_answer(username):
         flash("Please make sure the new security answer and confirm new security answer are the same", constants.ERROR)
         return redirect(request.url)
     try:
+        new_hash_pwd = generate_hashed_password(new_securityanswer)
         cursor = db_conn.cursor()
         if modified_default:
             ans = generate_hashed_password(old_securityanswer)
-            sql_stmt = "SELECT * FROM user WHERE username='{}' AND  security_answer='{}'".format(username, ans)
-            cursor.execute(sql_stmt)
-            user = cursor.fetchone()
-            if not user:
+            if ans != g.user[3]:
                 db_conn.commit()
                 flash("Incorrect security answer", constants.ERROR)
                 return redirect(request.url)
-        new_hash_pwd = generate_hashed_password(new_securityanswer)
+            if new_hash_pwd == ans:
+                db_conn.commit()
+                flash("Please make sure that new security answer is different from old security answer")
+                return redirect(request.url)
         sql_stmt = "UPDATE user SET security_answer='{}' WHERE username='{}'".format(new_hash_pwd, username)
+        cursor.execute(sql_stmt)
+        sql_stmt = "UPDATE user SET modified_answer='1' WHERE username='{}'".format(username)
         cursor.execute(sql_stmt)
         db_conn.commit()
     except Exception as e:
