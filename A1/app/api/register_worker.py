@@ -4,6 +4,7 @@ from flask import request
 
 from app import constants
 from app.database import db_conn
+from app.login import generate_hashed_password
 
 
 def work():
@@ -38,9 +39,10 @@ def work():
             db_conn.commit()
             return response, status_code
 
-        # TODO: hash password
         # create new user and insert into DB
-        insert_stmt = "INSERT INTO user (username, password,role) VALUES ('{}', '{}', '{}')".format(username, password, constants.USER)
+        hashed_pwd = generate_hashed_password(password)
+        hashed_ans = generate_hashed_password("default")
+        insert_stmt = "INSERT INTO user (username, password,role,security_answer) VALUES ('{}', '{}', '{}','{}')".format(username, hashed_pwd, constants.USER, hashed_ans)
         cursor.execute(insert_stmt)
         db_conn.commit()
 
