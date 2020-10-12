@@ -1,12 +1,38 @@
-{% for message in get_flashed_messages() %}
-<div class="flash">{{ message }}</div>
-{% endfor %}
+{% extends 'base.html' %}
 
-<form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Log In">
-</form>
-<a href="{{url_for('login.password_recovery')}}">Recover your password here</a>
+{% block title %}User Log In{% endblock %}
+
+{% block content %}
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">ECE1779A1</h3>
+                <p class="text-center" style="font-size:70%">Present By Chengchen Yang, Yongliang Wang, Yuxuan Kuang</p>
+                <div class="card-body">
+                    <h5 class="card-title text-center">User Log In</h5>
+                    <form class="form-signin" method="post">
+                        <div class="form-label-group">
+                            <input type="text" id="username" class="form-control" placeholder="Username" name="username"
+                                   required>
+                            <br>
+                        </div>
+                        <div class="form-label-group">
+                            <input type="password" id="password" class="form-control" placeholder="Password"
+                                   name="password"
+                                   required>
+                            <br>
+                        </div>
+                        <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Log in</button>
+                        <hr class="my-4">
+                    </form>
+                    <a href="{{url_for('login.password_recovery')}}">Forgot Password?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+{% endblock %}

@@ -1,27 +1,87 @@
-{% extends 'base_header.html' %}
+{% extends 'base.html' %}
+
+{% block title %}User Profile - {{username}}{% endblock %}
 
 {% block content %}
-<h1>User Profile</h1>
-<p>Username: {{ username }}</p>
-<form action="{{ '/user/{}'.format(username) }}" method="post">
-    <label for="oldPassword">Old Password</label>
-    <input type="password" name="old_password" id="oldPassword" required><br>
-    <label for="newPassword">New Password</label>
-    <input type="password" name="new_password" id="newPassword" required><br>
-    <label for="newPasswordConfirm">Confirm New Password</label>
-    <input type="password" name="new_password_confirm" id="newPasswordConfirm" required><br>
-    <input name="changePasswordBtn" type="submit" value="Change Password" />
-</form>
-<p>Security Questions: What is your Date of Birth?</p>
-<form action="{{ '/user/{}'.format(username) }}" method="post">
-    {%if security_answer == True %}
-    <label for="oldsecurityAnswer">Old Security Answer:</label>
-    <input type="password" name="old_securityAnswer" id="oldsecurityAnswer" required><br>
-    {% endif %}
-    <label for="newsecurityAnswer">New Security Answer</label>
-    <input type="password" name="new_securityAnswer" id="newsecurityAnswer" required><br>
-    <label for="newPasswordConfirm">Confirm New Security Answer</label>
-    <input type="password" name="new_securityAnswer_confirm" id="newsecurityAnswerConfirm" required><br>
-    <input name="changeSecurityAnswerBtn" type="submit" value="Change Security Answer"/>
-</form>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">Change Password</h3>
+                <div class="card-body">
+                    <h6 class="card-title text-center">User Name: {{ username }}</h6>
+                    <form class="form-signin" method="post" action="{{ '/user/{}'.format(username) }}">
+                        <div class="form-label-group">
+                            <input type="password" id="oldPassword" class="form-control" placeholder="Old Password"
+                                   name="old_password"
+                                   required>
+                            <br>
+                        </div>
+                        <div class="form-label-group">
+                            <input type="password" id="newPassword" class="form-control" placeholder="New Password"
+                                   name="new_password"
+                                   required>
+                            <br>
+                        </div>
+                        <div class="form-label-group">
+                            <input type="password" id="newPasswordConfirm" class="form-control"
+                                   placeholder=" Confirm New Password" name="new_password_confirm"
+                                   required>
+                            <br>
+                        </div>
+                        <div class="form-label-group text-center">
+                            <input class="btn btn-primary text-uppercase" type="submit" name="changePasswordBtn"
+                                   value="Change">
+                        </div>
+                        <hr class="my-4">
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">Change Security Answer</h3>
+                <div class="card-body">
+                    <h6 class="card-title text-center">Security Questions: What is your Date of Birth?</h6>
+                    <form class="form-signin" method="post" action="{{ '/user/{}'.format(username) }}">
+                        <div class="form-label-group">
+                            {%if security_answer %}
+                            <input type="password" id="oldsecurityAnswer" class="form-control"
+                                   placeholder="Old Security Answer" name="old_securityAnswer"
+                                   required>
+                            {% else %}
+                            <h6 class="card-title text-center" style="font-weight: bold; color: red;">Remainder: please set up your custom security answer</h6>
+                            {% endif %}
+                            <br>
+                        </div>
+                        <div class="form-label-group">
+                            <input type="password" id="newsecurityAnswer" class="form-control"
+                                   placeholder="New Security Answer" name="new_securityAnswer"
+                                   required>
+                            <br>
+                        </div>
+                        <div class="form-label-group">
+                            <input type="password" id="newsecurityAnswerConfirm" class="form-control"
+                                   placeholder="Confirm New Security Answer" name="new_securityAnswer_confirm"
+                                   required>
+                            <br>
+                        </div>
+                        <div class="form-label-group text-center">
+                            <input class="btn btn-primary text-uppercase" type="submit"
+                                   name="changeSecurityAnswerBtn" value="Create">
+                        </div>
+                        <hr class="my-4">
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
 {% endblock %}

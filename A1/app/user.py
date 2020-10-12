@@ -36,7 +36,7 @@ def user_profile(username):
             modified_answer = False if not g.user[constants.MODIFIED_ANSWER] else True
             return render_template("user/profile.html", username=username, security_answer=modified_answer)
         else:
-            flash("Cannot access other user's profile")
+            flash("Cannot access other user's profile", constants.ERROR)
             return redirect(url_for("detection.detect"))
 
 
@@ -46,9 +46,9 @@ def user_profile(username):
 def create_user():
     response, _ = register_worker.work()
     if response["success"]:
-        flash("Successfully created user")
+        flash("Successfully created user", constants.INFO)
     else:
-        flash(response["error"]["message"])
+        flash(response["error"]["message"], constants.ERROR)
     return redirect(url_for("user.user_management"))
 
 
@@ -63,16 +63,16 @@ def delete_user():
         cursor.execute(sql_stmt)
         if not cursor.fetchone():
             db_conn.commit()
-            flash("no user exist in the database")
+            flash("No user exist in the database", constants.ERROR)
             return redirect(url_for("user.user_management"))
         sql_stmt = "DELETE FROM user WHERE username='{}'".format(username)
         cursor.execute(sql_stmt)
         db_conn.commit()
     except Exception as e:
-        flash("Unexpected error {}".format(e))
+        flash("Unexpected error {}".format(e), constants.ERROR)
         return redirect(url_for("user.user_management"))
     else:
-        flash("Successfully deleted user with username {}".format(username))
+        flash("Successfully deleted user with username {}".format(username), constants.INFO)
         return redirect(url_for("user.user_management"))
 
 
@@ -82,15 +82,15 @@ def change_password(username):
     new_password = request.form.get("new_password")
     new_password_confirm = request.form.get("new_password_confirm")
     if not old_password or not new_password or not new_password_confirm:
-        flash("Please provide old password, new password and confirm new password when change password")
+        flash("Please provide old password, new password and confirm new password when change password", constants.ERROR)
         return redirect(request.url)
 
     # TODO: verify the password satisfy a specific format
     if new_password != new_password_confirm:
-        flash("Please make sure the new password and confirm new password are the same")
+        flash("Please make sure the new password and confirm new password are the same", constants.ERROR)
         return redirect(request.url)
     elif new_password == old_password:
-        flash("New password is the same as old password, please change")
+        flash("New password is the same as old password, please change", constants.ERROR)
         return redirect(request.url)
 
     # make queries to the SQL DB to modify the user record
@@ -102,17 +102,17 @@ def change_password(username):
         user = cursor.fetchone()
         if not verify_password(user[constants.PASSWORD], old_password):
             db_conn.commit()
-            flash("Incorrect password")
+            flash("Incorrect password", constants.ERROR)
             return redirect(request.url)
         new_hash_pwd = generate_hashed_password(new_password)
         sql_stmt = "UPDATE user SET password='{}' WHERE username='{}'".format(new_hash_pwd, username)
         cursor.execute(sql_stmt)
         db_conn.commit()
     except Exception as e:
-        flash("Unexpected error {}".format(e))
+        flash("Unexpected error {}".format(e), constants.ERROR)
         return redirect(request.url)
     else:
-        flash("Password is updated successfully")
+        flash("Password is updated successfully", constants.INFO)
         return render_template("user/profile.html", username=username)
 
 
@@ -122,14 +122,13 @@ def change_security_answer(username):
     new_securityanswer = request.form.get("new_securityAnswer")
     new_securityanswer_confirm = request.form.get("new_securityAnswer_confirm")
     if not new_securityanswer or not new_securityanswer_confirm:
-        flash("Please provide new security answer and confirm new security answer when making changes")
+        flash("Please provide new security answer and confirm new security answer when making changes", constants.ERROR)
         return redirect(request.url)
     if new_securityanswer != new_securityanswer_confirm:
-        flash("Please make sure the new security answer and confirm new security answer are the same")
+        flash("Please make sure the new security answer and confirm new security answer are the same", constants.ERROR)
         return redirect(request.url)
 
     try:
-
         new_hash_pwd = generate_hashed_password(new_securityanswer)
         cursor = db_conn.cursor()
         if g.user[constants.MODIFIED_ANSWER]:
@@ -138,7 +137,6 @@ def change_security_answer(username):
             old_securityanswer = request.form.get("old_securityAnswer")
             if not old_securityanswer:
                 flash("Please provide old security answer")
-                return redirect(request.url)
             if not verify_password(g.user[constants.SECURITY_ANSWER], old_securityanswer):
                 db_conn.commit()
                 flash("Incorrect security answer")
@@ -149,9 +147,9 @@ def change_security_answer(username):
         cursor.execute(sql_stmt)
         db_conn.commit()
     except Exception as e:
-        flash("Unexpected error {}".format(e))
+        flash("Unexpected error {}".format(e), constants.ERROR)
         return redirect(request.url)
     else:
-        flash("security answer is updated successfully")
+        flash("Security answer is updated successfully", constants.INFO)
         modified_default = True
         return render_template("user/profile.html", username=username, security_answer=modified_default)

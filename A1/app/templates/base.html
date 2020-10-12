@@ -1,0 +1,48 @@
+<!doctype html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<section class="content">
+    <header>
+        {% if g.user %}
+        {% block header %}
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand">ECE1779A1</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="nav navbar-nav">
+                    <li class="nav-item">
+                        <a href={{url_for('detection.detect')}} class="nav-link">Detection</a>
+                    </li>
+                    <li class="nav-item">
+                        {% if g.user[2] == "admin" %}
+                        <a href="{{url_for('user.user_management')}}" class="nav-link">Users</a>
+                        {% endif %}
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{url_for('user.user_profile', username=g.user[0])}}" class="nav-link">Profile</a>
+                    </li>
+                </ul>
+                <form action="/login/logout" method="post" class="ml-auto">
+                    <button name="logoutBtn" type="submit" class="btn btn-secondary">Log Out</button>
+                </form>
+            </div>
+        </nav>
+        {% endblock %}
+        {% endif %}
+    </header>
+
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} flash text-center" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+
+    {% block content %}{% endblock %}
+</section>

@@ -5,6 +5,9 @@ ROLE = 2
 SECURITY_ANSWER = 3
 MODIFIED_ANSWER = 4
 
+# constants related to flashed message type
+ERROR = "error"
+INFO = "info"
 
 # constants for role types
 ADMIN = "admin"

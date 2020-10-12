@@ -1,11 +1,33 @@
-{% extends 'base_header.html' %}
+{% extends 'base.html' %}
+
+{% block title %}Detection{% endblock %}
 
 {% block content %}
-<title>Upload new File</title>
-<h1>Upload new File</h1>
-<form method=post enctype=multipart/form-data>
-    <input type=file name=file>
-    <input type=text name=url>
-    <input type=submit value=Upload>
-</form>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">Upload New Image</h3>
+                <div class="card-body text-center">
+                    <form class="md-form" method="post" enctype=multipart/form-data>
+                        <div class="file-field">
+                            <div class="btn btn-default btn-sm float-center" style="margin-top:10px; margin-bottom:10px">
+                                <input type="file" name="file">
+                            </div>
+                            <div class="file-path-wrapper"  style="margin-top:10px; margin-bottom:10px">
+                                <input class="file-path validate form-control" type="text" placeholder="Paste Image Link Here" style="width:100%">
+                            </div>
+                        </div>
+                        <input type=submit value=Upload class="btn btn-primary">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+
 {% endblock %}

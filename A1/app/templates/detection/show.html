@@ -1,9 +1,30 @@
-{% extends 'base_header.html' %}
+{% extends 'base.html' %}
+
+{% block title %}Detection Result{% endblock %}
+
 
 {% block content %}
-<img src="{{url_for('static', filename=image_record[0])}}" height="600">
-<p>Result: {{category_map[image_record[1]]}}</p>
-<p>Number of Faces Detected: {{image_record[2]}}</p>
-<p>Number of Faces Wearing Masks: {{image_record[3]}}</p>
-<p>Number of Faces Not Wearing Masks: {{image_record[4]}}</p>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <div class="card-body text-center">
+                    <form class="md-form" method="post" enctype=multipart/form-data>
+                        <div class="file-field">
+                            <img src="{{url_for('static', filename=image_record[0])}}" height="400"><br>
+                            <p>Result: {{category_map[image_record[1]]}}</p>
+                            <p>Number of Faces Detected: {{image_record[2]}}</p>
+                            <p>Number of Faces Wearing Masks: {{image_record[3]}}</p>
+                            <p>Number of Faces Not Wearing Masks: {{image_record[4]}}</p>
+                        </div>
+                    </form>
+                    <a href="{{url_for('detection.detect')}}" class="btn btn-primary">Go back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
 {% endblock %}
