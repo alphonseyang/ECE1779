@@ -15,28 +15,28 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
         if not username or not password:
-            flash("Please provide both username and password when login")
+            flash("Please provide both username and password when login", constants.ERROR)
             return redirect(request.url)
 
         error = authenticate(username, password)
         if not error:
+            flash("Successfully logged in", constants.INFO)
             return redirect(url_for("detection.detect"))
         else:
-            # TODO: show the flash in the view
-            flash(error)
+            flash(error, constants.ERROR)
             return redirect(request.url)
 
     return render_template("login/login.html")
 
 
-@bp.route("/password_change", methods=("GET", "POST"))
+@bp.route("/password_recovery", methods=("GET", "POST"))
 def password_recovery():
     if request.method == "POST":
         username = request.form.get("username")
         security_answer = request.form.get("securityanswer")
         password = request.form.get("password")
         if not username or not password or not security_answer:
-            flash("Please provide all the required fields to recover your passwords")
+            flash("Please provide all the required fields to recover your passwords", constants.ERROR)
             return redirect(request.url)
         # make queries to the SQL DB to modify the user record
         try:
@@ -46,7 +46,7 @@ def password_recovery():
             user = cursor.fetchone()
             if not user:
                 db_conn.commit()
-                flash("non existed user")
+                flash("No user with username {} exists".format(username), constants.ERROR)
                 return redirect(request.url)
             if user[constants.MODIFIED_ANSWER] != 0:
                 ans = generate_hashed_password(security_answer)
@@ -56,19 +56,19 @@ def password_recovery():
                 user = cursor.fetchone()
                 if not user:
                     db_conn.commit()
-                    flash("Incorrect security answer")
+                    flash("Incorrect security answer", constants.ERROR)
                     return redirect(request.url)
             new_pwd = generate_hashed_password(password)
             sql_stmt = "UPDATE user SET password='{}' WHERE username='{}'".format(new_pwd, username)
             cursor.execute(sql_stmt)
             db_conn.commit()
         except Exception as e:
-            flash("Unexpected error {}".format(e))
+            flash("Unexpected error {}".format(e), constants.ERROR)
             return redirect(request.url)
         else:
-            flash("security answer is updated successfully")
+            flash("Password is reset successfully", constants.INFO)
             modified_default = True
-            return render_template("login/login.html")
+            return redirect(url_for("login.login"))
     return render_template("login/password_recovery.html")
 
 
@@ -107,7 +107,7 @@ def login_admin_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None or g.user[constants.ROLE] == constants.USER:
-            flash("You don't have permission to access user management page")
+            flash("You don't have permission to access user management page", constants.ERROR)
             return redirect(url_for("detection.detect"))
         return view(**kwargs)
 

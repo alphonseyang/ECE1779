@@ -19,7 +19,7 @@ def detect():
     if request.method == "POST":
         # ensure image is provided
         if "file" not in request.files and "online_file" not in request.form:
-            flash("No file or URL provided")
+            flash("No file or URL provided", constants.ERROR)
             return redirect(request.url)
 
         # determine which type of upload
@@ -29,27 +29,28 @@ def detect():
             file_data = file.read()
             error = allowed_file(True, file_name=file_name, file_size=len(file_data))
             if error:
-                flash("Image doesn't meet the requirement")
+                flash("Image doesn't meet the requirement", constants.ERROR)
                 return redirect(request.url)
         else:
             url = request.form["url"]
             response = requests.get(url)
             data_type = response.headers.get("content-type")
             if not response.ok:
-                flash("Online image doesn't exist")
+                flash("Online image doesn't exist", constants.ERROR)
                 return redirect(request.url)
             file_data = response.content
             error = allowed_file(False, data_type=data_type, file_size=len(file_data))
             if error:
-                flash(error)
+                flash(error, constants.ERROR)
                 return redirect(request.url)
 
         # pass all check, upload the file
         msg, output_info, image_id = upload_file(file_data)
-        flash(msg)
         if output_info and image_id:
+            flash(msg, constants.INFO)
             return redirect(url_for("detection.show_image", image_id=image_id))
         else:
+            flash(msg, constants.ERROR)
             return redirect(request.url)
 
     return render_template("detection/detection.html")
@@ -70,16 +71,16 @@ def show_image(image_id):
 
         # if not found
         if not image_record:
-            flash("Couldn't find the image")
+            flash("Couldn't find the image", constants.ERROR)
             return redirect(url_for("detection.detect"))
 
         # prevent unwanted access from other user
         if image_record[-1] != g.user[constants.USERNAME]:
-            flash("Not allowed to access the image uploaded by other user")
+            flash("Not allowed to access the image uploaded by other user", constants.ERROR)
             return redirect(url_for("detection.detect"))
 
     except Exception as e:
-        flash("Unexpected exception {}".format(e))
+        flash("Unexpected exception {}".format(e), constants.ERROR)
         return redirect(url_for("detection.detect"))
 
     return render_template("detection/show.html", image_record=image_record, category_map=constants.CATEGORY_MAP)
@@ -120,7 +121,7 @@ def upload_file(file_data):
     except Exception as e:
         msg = "Unexpected error {}".format(e)
     else:
-        msg = "Successfully detected file"
+        msg = "Successfully processed image"
     return msg, output_info, image_id
 
 
