@@ -3,7 +3,8 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from app import constants
 from app.api import register_worker
 from app.database import db_conn
-from app.login import login_required, login_admin_required, generate_hashed_password
+from app.login import generate_hashed_password
+from app.precheck import login_required, login_admin_required
 
 bp = Blueprint("user", __name__, url_prefix="/user")
 

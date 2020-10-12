@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 
 
 def create_app():
@@ -22,6 +22,11 @@ def create_app():
     # use a constant secret key for database for now
     # for real case, probably use the CMK stored in AWS SSM Parameter Store and retrieve from there
     app.secret_key = "ECE1779A1"
+
+    # auto forward the root index to login
+    @app.route("/")
+    def root_index():
+        return redirect(url_for("login.login"))
 
     return app
 

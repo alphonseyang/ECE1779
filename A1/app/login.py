@@ -1,15 +1,15 @@
-import functools
-
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
 from app import constants
 from app.database import db_conn
+from app.precheck import already_login
 
 bp = Blueprint("login", __name__, url_prefix="/login")
 
 
 # TODO: direct the main page to detection is logged in else to login page
 @bp.route("/", methods=("GET", "POST"))
+@already_login
 def login():
     if request.method == "POST":
         username = request.form.get("username")
@@ -85,29 +85,6 @@ def load_logged_in_user():
         user = cursor.fetchone()
         g.user = user
         db_conn.commit()
-
-
-# decorator method that force all not signed request to jump back to login page
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for("login.login"))
-        return view(**kwargs)
-
-    return wrapped_view
-
-
-# decorator method that force all not signed request to jump back to login page
-def login_admin_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None or g.user[constants.ROLE] == constants.USER:
-            flash("You don't have permission to access user management page", constants.ERROR)
-            return redirect(url_for("detection.detect"))
-        return view(**kwargs)
-
-    return wrapped_view
 
 
 def authenticate(username, password):

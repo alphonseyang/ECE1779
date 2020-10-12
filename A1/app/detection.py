@@ -7,7 +7,7 @@ from flask import Blueprint, flash, g, render_template, request, redirect, url_f
 from FaceMaskDetection import pytorch_infer
 from app import constants
 from app.database import db_conn
-from app.login import login_required
+from app.precheck import login_required
 
 bp = Blueprint("detection", __name__, url_prefix="/detection")
 
