@@ -49,14 +49,16 @@
                 <div class="card-body">
                     <h6 class="card-title text-center">Security Questions: What is your Date of Birth?</h6>
                     <form class="form-signin" method="post" action="{{ '/user/{}'.format(username) }}">
-                        {%if security_answer %}
                         <div class="form-label-group">
+                            {%if security_answer %}
                             <input type="password" id="oldsecurityAnswer" class="form-control"
                                    placeholder="Old Security Answer" name="old_securityAnswer"
                                    required>
+                            {% else %}
+                            <h6 class="card-title text-center" style="font-weight: bold; color: red;">Remainder: please set up your custom security answer</h6>
+                            {% endif %}
                             <br>
                         </div>
-                        {% endif %}
                         <div class="form-label-group">
                             <input type="password" id="newsecurityAnswer" class="form-control"
                                    placeholder="New Security Answer" name="new_securityAnswer"
