@@ -83,7 +83,7 @@ def change_password(username):
     new_password = request.form.get("new_password")
     new_password_confirm = request.form.get("new_password_confirm")
     if not old_password or not new_password or not new_password_confirm:
-        flash("Please provide old password, new password and confirm new password when change password", constants.ERROR)
+        flash("Please provide old password, new password and confirm new password", constants.ERROR)
         return redirect(request.url)
 
     # TODO: verify the password satisfy a specific format

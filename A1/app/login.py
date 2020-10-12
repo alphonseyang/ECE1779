@@ -1,8 +1,8 @@
-from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
-import functools
-import hashlib
 import binascii
+import hashlib
 import os
+
+from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
 from app import constants
 from app.database import db_conn
@@ -68,7 +68,6 @@ def password_recovery():
             return redirect(request.url)
         else:
             flash("Password is reset successfully", constants.INFO)
-            modified_default = True
             return redirect(url_for("login.login"))
     return render_template("login/password_recovery.html")
 
