@@ -1,4 +1,8 @@
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
+import functools
+import hashlib
+import binascii
+import os
 
 from app import constants
 from app.database import db_conn
@@ -25,7 +29,7 @@ def login():
         else:
             flash(error, constants.ERROR)
             return redirect(request.url)
-
+    print(generate_hashed_password("default"))
     return render_template("login/login.html")
 
 
@@ -49,8 +53,9 @@ def password_recovery():
                 flash("No user with username {} exists".format(username), constants.ERROR)
                 return redirect(request.url)
             if user[constants.MODIFIED_ANSWER] != 0:
-                ans = generate_hashed_password(security_answer)
-                if ans != user[constants.SECURITY_ANSWER]:
+                # ans = generate_hashed_password(security_answer)
+                # if ans != user[constants.SECURITY_ANSWER]:
+                if verify_password(user[constants.SECURITY_ANSWER], security_answer):
                     db_conn.commit()
                     flash("Incorrect security answer", constants.ERROR)
                     return redirect(request.url)
@@ -90,16 +95,17 @@ def load_logged_in_user():
 def authenticate(username, password):
     try:
         cursor = db_conn.cursor()
-        hash_pwd = generate_hashed_password(password)
-        sql_stmt = "SELECT * FROM user WHERE username='{}' AND password='{}'".format(username, hash_pwd)
+        # hash_pwd = generate_hashed_password(password)
+        sql_stmt = "SELECT * FROM user WHERE username='{}'".format(username)
         cursor.execute(sql_stmt)
         user = cursor.fetchone()
         db_conn.commit()
     except Exception as e:
         error = "Unexpected error {}".format(e)
     else:
-        error = None if user else "Incorrect username or password"
-        if not error and user:
+        verified = verify_password(user[constants.PASSWORD], password)
+        error = None if verified else "Incorrect username or password"
+        if not error and verified:
             session.clear()
             session["username"] = user[constants.USERNAME]
             # load logged in user for api case, normally this will be loaded before every request
@@ -108,5 +114,21 @@ def authenticate(username, password):
 
 
 def generate_hashed_password(password):
-    # TODO: hash password
-    return password
+    """Hash a password for storing."""
+    salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
+                                  salt, 100000)
+    pwdhash = binascii.hexlify(pwdhash)
+    return (salt + pwdhash).decode('ascii')
+
+
+def verify_password(stored_password, provided_password):
+    """Verify a stored password against one provided by user"""
+    salt = stored_password[:64]
+    stored_password = stored_password[64:]
+    pwdhash = hashlib.pbkdf2_hmac('sha512',
+                                  provided_password.encode('utf-8'),
+                                  salt.encode('ascii'),
+                                  100000)
+    pwdhash = binascii.hexlify(pwdhash).decode('ascii')
+    return pwdhash == stored_password

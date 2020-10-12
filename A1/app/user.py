@@ -3,7 +3,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from app import constants
 from app.api import register_worker
 from app.database import db_conn
-from app.login import generate_hashed_password
+from app.login import generate_hashed_password, verify_password
 from app.precheck import login_required, login_admin_required
 
 bp = Blueprint("user", __name__, url_prefix="/user")
@@ -97,11 +97,11 @@ def change_password(username):
     # make queries to the SQL DB to modify the user record
     try:
         cursor = db_conn.cursor()
-        hash_pwd = generate_hashed_password(old_password)
-        sql_stmt = "SELECT * FROM user WHERE username='{}' AND password='{}'".format(username, hash_pwd)
+        # hash_pwd = generate_hashed_password(old_password)
+        sql_stmt = "SELECT * FROM user WHERE username='{}'".format(username)
         cursor.execute(sql_stmt)
         user = cursor.fetchone()
-        if not user:
+        if not verify_password(user[constants.PASSWORD], old_password):
             db_conn.commit()
             flash("Incorrect password", constants.ERROR)
             return redirect(request.url)
@@ -119,15 +119,6 @@ def change_password(username):
 
 # helper method for the change security answer logic
 def change_security_answer(username):
-    modified_default = False
-    # need to have old answer if modified previously
-    if g.user[constants.MODIFIED_ANSWER]:
-        modified_default = True
-        old_securityanswer = request.form.get("old_securityAnswer")
-        if not old_securityanswer:
-            flash("Please provide old security answer", constants.ERROR)
-            return redirect(request.url)
-
     # confirm the input are the same
     new_securityanswer = request.form.get("new_securityAnswer")
     new_securityanswer_confirm = request.form.get("new_securityAnswer_confirm")
@@ -137,18 +128,19 @@ def change_security_answer(username):
     if new_securityanswer != new_securityanswer_confirm:
         flash("Please make sure the new security answer and confirm new security answer are the same", constants.ERROR)
         return redirect(request.url)
+
     try:
         new_hash_pwd = generate_hashed_password(new_securityanswer)
         cursor = db_conn.cursor()
-        if modified_default:
-            ans = generate_hashed_password(old_securityanswer)
-            if ans != g.user[3]:
+        if g.user[constants.MODIFIED_ANSWER]:
+            # ans = generate_hashed_password(old_securityanswer)
+            # if ans != g.user[3]:
+            old_securityanswer = request.form.get("old_securityAnswer")
+            if not old_securityanswer:
+                flash("Please provide old security answer", constants.ERROR)
+            if not verify_password(g.user[constants.SECURITY_ANSWER], old_securityanswer):
                 db_conn.commit()
                 flash("Incorrect security answer", constants.ERROR)
-                return redirect(request.url)
-            if new_hash_pwd == ans:
-                db_conn.commit()
-                flash("Please make sure that new security answer is different from old security answer", constants.ERROR)
                 return redirect(request.url)
         sql_stmt = "UPDATE user SET security_answer='{}' WHERE username='{}'".format(new_hash_pwd, username)
         cursor.execute(sql_stmt)
