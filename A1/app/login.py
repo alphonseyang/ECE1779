@@ -50,11 +50,7 @@ def password_recovery():
                 return redirect(request.url)
             if user[constants.MODIFIED_ANSWER] != 0:
                 ans = generate_hashed_password(security_answer)
-                # TODO: just compare the hashed value from DB with your generated hashed value, no need to query again
-                sql_stmt = "SELECT * FROM user WHERE username='{}' AND  security_answer='{}'".format(username, ans)
-                cursor.execute(sql_stmt)
-                user = cursor.fetchone()
-                if not user:
+                if ans != user[constants.SECURITY_ANSWER]:
                     db_conn.commit()
                     flash("Incorrect security answer")
                     return redirect(request.url)
@@ -66,9 +62,9 @@ def password_recovery():
             flash("Unexpected error {}".format(e))
             return redirect(request.url)
         else:
-            flash("security answer is updated successfully")
+            flash("password is updated successfully")
             modified_default = True
-            return render_template("login/login.html")
+            return redirect(url_for("login.login"))
     return render_template("login/password_recovery.html")
 
 
