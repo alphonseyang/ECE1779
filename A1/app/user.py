@@ -136,10 +136,10 @@ def change_security_answer(username):
             # if ans != g.user[3]:
             old_securityanswer = request.form.get("old_securityAnswer")
             if not old_securityanswer:
-                flash("Please provide old security answer")
+                flash("Please provide old security answer", constants.ERROR)
             if not verify_password(g.user[constants.SECURITY_ANSWER], old_securityanswer):
                 db_conn.commit()
-                flash("Incorrect security answer")
+                flash("Incorrect security answer", constants.ERROR)
                 return redirect(request.url)
         sql_stmt = "UPDATE user SET security_answer='{}' WHERE username='{}'".format(new_hash_pwd, username)
         cursor.execute(sql_stmt)
