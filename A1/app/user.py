@@ -3,16 +3,22 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from app import constants
 from app.api import register_worker
 from app.database import db_conn
-from app.login import generate_hashed_password, verify_password
+from app.login import encrypt_credentials, verify_password
 from app.precheck import login_required, login_admin_required
 
 bp = Blueprint("user", __name__, url_prefix="/user")
 
+'''
+user management logic file
+'''
 
+
+# user management page method
 @bp.route("/")
 @login_required
 @login_admin_required
 def user_management():
+    # show a list of user for selection to delete
     cursor = db_conn.cursor()
     sql_stmt = "SELECT username FROM user WHERE role='{}'".format(constants.USER)
     cursor.execute(sql_stmt)
@@ -21,6 +27,7 @@ def user_management():
     return render_template("user/user_management.html", users=user)
 
 
+# display user detail and allow for change password and security answer
 @bp.route("/<username>", methods=("GET", "POST"))
 @login_required
 def user_profile(username):
@@ -41,6 +48,7 @@ def user_profile(username):
             return redirect(url_for("detection.detect"))
 
 
+# create user logic
 @bp.route("/create", methods=["POST"])
 @login_required
 @login_admin_required
@@ -53,6 +61,7 @@ def create_user():
     return redirect(url_for("user.user_management"))
 
 
+# delete user logic
 @bp.route("/delete", methods=["POST"])
 @login_required
 @login_admin_required
@@ -86,7 +95,6 @@ def change_password(username):
         flash("Please provide old password, new password and confirm new password", constants.ERROR)
         return redirect(request.url)
 
-    # TODO: verify the password satisfy a specific format
     if new_password != new_password_confirm:
         flash("Please make sure the new password and confirm new password are the same", constants.ERROR)
         return redirect(request.url)
@@ -105,7 +113,7 @@ def change_password(username):
             db_conn.commit()
             flash("Incorrect password", constants.ERROR)
             return redirect(request.url)
-        new_hash_pwd = generate_hashed_password(new_password)
+        new_hash_pwd = encrypt_credentials(new_password)
         sql_stmt = "UPDATE user SET password='{}' WHERE username='{}'".format(new_hash_pwd, username)
         cursor.execute(sql_stmt)
         db_conn.commit()
@@ -130,7 +138,7 @@ def change_security_answer(username):
         return redirect(request.url)
 
     try:
-        new_hash_pwd = generate_hashed_password(new_securityanswer)
+        new_hash_pwd = encrypt_credentials(new_securityanswer)
         cursor = db_conn.cursor()
         if g.user[constants.MODIFIED_ANSWER]:
             # ans = generate_hashed_password(old_securityanswer)

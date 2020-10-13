@@ -1,7 +1,11 @@
-
-from flask import Blueprint, url_for, redirect
+from flask import Blueprint
 
 from app.api import register_worker, upload_worker
+
+'''
+Module init file that declares the API methods
+'''
+
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 

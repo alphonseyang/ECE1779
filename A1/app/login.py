@@ -10,8 +10,12 @@ from app.precheck import already_login
 
 bp = Blueprint("login", __name__, url_prefix="/login")
 
+'''
+authentication related logic file
+'''
 
-# TODO: direct the main page to detection is logged in else to login page
+
+# login logic implementation
 @bp.route("/", methods=("GET", "POST"))
 @already_login
 def login():
@@ -29,10 +33,11 @@ def login():
         else:
             flash(error, constants.ERROR)
             return redirect(request.url)
-    print(generate_hashed_password("default"))
+
     return render_template("login/login.html")
 
 
+# password recovery logic implementation
 @bp.route("/password_recovery", methods=("GET", "POST"))
 def password_recovery():
     if request.method == "POST":
@@ -42,6 +47,7 @@ def password_recovery():
         if not username or not password or not security_answer:
             flash("Please provide all the required fields to recover your passwords", constants.ERROR)
             return redirect(request.url)
+
         # make queries to the SQL DB to modify the user record
         try:
             cursor = db_conn.cursor()
@@ -52,32 +58,38 @@ def password_recovery():
                 db_conn.commit()
                 flash("No user with username {} exists".format(username), constants.ERROR)
                 return redirect(request.url)
+
+            # verify the answer if not default
             if user[constants.MODIFIED_ANSWER] != 0:
-                # ans = generate_hashed_password(security_answer)
-                # if ans != user[constants.SECURITY_ANSWER]:
                 if verify_password(user[constants.SECURITY_ANSWER], security_answer):
                     db_conn.commit()
                     flash("Incorrect security answer", constants.ERROR)
                     return redirect(request.url)
-            new_pwd = generate_hashed_password(password)
+
+            # change password to one provided
+            new_pwd = encrypt_credentials(password)
             sql_stmt = "UPDATE user SET password='{}' WHERE username='{}'".format(new_pwd, username)
             cursor.execute(sql_stmt)
             db_conn.commit()
+
         except Exception as e:
             flash("Unexpected error {}".format(e), constants.ERROR)
             return redirect(request.url)
         else:
             flash("Password is reset successfully", constants.INFO)
             return redirect(url_for("login.login"))
+
     return render_template("login/password_recovery.html")
 
 
+# logout and clear session
 @bp.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return redirect(url_for("login.login"))
 
 
+# make sure the user credentials are available
 @bp.before_app_request
 def load_logged_in_user():
     username = session.get("username")
@@ -91,6 +103,7 @@ def load_logged_in_user():
         db_conn.commit()
 
 
+# authenticate user for the login information
 def authenticate(username, password):
     try:
         cursor = db_conn.cursor()
@@ -112,8 +125,8 @@ def authenticate(username, password):
     return error
 
 
-def generate_hashed_password(password):
-    """Hash a password for storing."""
+# Hash a credential for storing
+def encrypt_credentials(password):
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
     pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
                                   salt, 100000)
@@ -121,8 +134,8 @@ def generate_hashed_password(password):
     return (salt + pwdhash).decode('ascii')
 
 
+# Verify a stored password against one provided by user
 def verify_password(stored_password, provided_password):
-    """Verify a stored password against one provided by user"""
     salt = stored_password[:64]
     stored_password = stored_password[64:]
     pwdhash = hashlib.pbkdf2_hmac('sha512',

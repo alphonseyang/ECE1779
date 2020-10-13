@@ -4,7 +4,11 @@ from flask import request
 
 from app import constants
 from app.database import db_conn
-from app.login import generate_hashed_password
+from app.login import encrypt_credentials
+
+'''
+Register API implementation file
+'''
 
 
 def work():
@@ -40,18 +44,21 @@ def work():
             return response, status_code
 
         # create new user and insert into DB
-        hashed_pwd = generate_hashed_password(password)
-        hashed_ans = generate_hashed_password("default")
+        hashed_pwd = encrypt_credentials(password)
+        hashed_ans = encrypt_credentials("default")
         insert_stmt = "INSERT INTO user (username, password,role,security_answer) VALUES ('{}', '{}', '{}','{}')".format(username, hashed_pwd, constants.USER, hashed_ans)
         cursor.execute(insert_stmt)
         db_conn.commit()
 
+    # in case of error, report error
     except Exception as e:
         status_code = HTTPStatus.INTERNAL_SERVER_ERROR
         response["error"] = {"code": "ServerError",
                              "message": "Unexpected Server Error {}".format(e)}
+    # otherwise return success message
     else:
         status_code = HTTPStatus.OK
         response["success"] = True
 
+    # returns response body with the corresponding HTTP status code
     return response, status_code

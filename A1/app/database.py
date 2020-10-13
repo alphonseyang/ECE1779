@@ -1,5 +1,10 @@
 import pymysql
 
+'''
+Database initialization implementation file
+'''
+
+
 db_conn = None
 # will need to install mysql and set up user info
 # run the schema.sql to set up the database with schema tables and initial data
@@ -21,6 +26,7 @@ DATABASE_PROD_CONFIG = {
 }
 
 
+# initialize the database connection when app creation
 def init_db(env):
     global db_conn
     if env == "development":
@@ -29,5 +35,6 @@ def init_db(env):
         db_conn = pymysql.connect(**DATABASE_PROD_CONFIG)
 
 
+# close database connection
 def close_db():
     db_conn.close()

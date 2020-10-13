@@ -4,6 +4,10 @@ from flask import flash, g, redirect, url_for
 
 from app import constants
 
+'''
+decorator methods used to ensure security
+'''
+
 
 # if already login, just redirect to detection, will not go to login page again unless log out
 def already_login(view):

@@ -1,5 +1,9 @@
 from flask import Flask, redirect, url_for
 
+'''
+main app factory that creates the flask app
+'''
+
 
 def create_app():
     # create and configure the app

@@ -11,6 +11,10 @@ from app.precheck import login_required
 
 bp = Blueprint("detection", __name__, url_prefix="/detection")
 
+'''
+Detection component for the image processing and display
+'''
+
 
 # main detection method that calls the AI part and save records
 @bp.route("/", methods=("GET", "POST"))
@@ -22,7 +26,7 @@ def detect():
             flash("No file or URL provided", constants.ERROR)
             return redirect(request.url)
 
-        # determine which type of upload
+        # check local file uploaded
         if "file" in request.files and request.files["file"].filename != "":
             file = request.files["file"]
             file_name = file.filename
@@ -31,6 +35,7 @@ def detect():
             if error:
                 flash("Image doesn't meet the requirement", constants.ERROR)
                 return redirect(request.url)
+        # check online link provided
         else:
             url = request.form["url"]
             response = requests.get(url)
@@ -56,10 +61,12 @@ def detect():
     return render_template("detection/detection.html")
 
 
+# display image method
 @bp.route("/<image_id>")
 @login_required
 def show_image(image_id):
     try:
+        # query image data from the database
         sql_stmt = '''
         SELECT image_path, category, num_faces, num_masked, num_unmasked, username FROM image
         WHERE image_id="{}"
@@ -69,7 +76,7 @@ def show_image(image_id):
         image_record = cursor.fetchone()
         db_conn.commit()
 
-        # if not found
+        # if not found the image record
         if not image_record:
             flash("Couldn't find the image", constants.ERROR)
             return redirect(url_for("detection.detect"))
@@ -79,6 +86,7 @@ def show_image(image_id):
             flash("Not allowed to access the image uploaded by other user", constants.ERROR)
             return redirect(url_for("detection.detect"))
 
+    # error handling
     except Exception as e:
         flash("Unexpected exception {}".format(e), constants.ERROR)
         return redirect(url_for("detection.detect"))
@@ -88,6 +96,7 @@ def show_image(image_id):
 
 # main logic to upload file and save records
 def upload_file(file_data):
+    # file directory processing
     output_info = None
     output_file_name, image_id = generate_file_name()
     user_image_folder = constants.DEST_FOLDER + g.user[constants.USERNAME] + "/"
@@ -122,6 +131,7 @@ def upload_file(file_data):
         msg = "Unexpected error {}".format(e)
     else:
         msg = "Successfully processed image"
+
     return msg, output_info, image_id
 
 

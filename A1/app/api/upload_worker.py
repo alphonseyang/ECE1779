@@ -5,6 +5,10 @@ from flask import request
 from app.detection import extract_mask_info, upload_file
 from app.login import authenticate
 
+'''
+Upload API implementation file
+'''
+
 
 def work():
     username = request.form.get("username")
