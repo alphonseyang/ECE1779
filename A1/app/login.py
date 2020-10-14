@@ -5,7 +5,7 @@ import os
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
 from app import constants
-from app.database import db_conn
+from app.database import get_conn
 from app.precheck import already_login
 
 bp = Blueprint("login", __name__, url_prefix="/login")
@@ -50,6 +50,7 @@ def password_recovery():
 
         # make queries to the SQL DB to modify the user record
         try:
+            db_conn = get_conn()
             cursor = db_conn.cursor()
             sql_stmt = "SELECT * FROM user WHERE username='{}'".format(username)
             cursor.execute(sql_stmt)
@@ -92,7 +93,7 @@ def logout():
 # make sure the user credentials are available
 @bp.before_app_request
 def load_logged_in_user():
-    # for the image request, we just skip the user info retrieval
+    # for the image request, we just skip the user info retrieval to avoid overloading DB
     if request.path.startswith("/static"):
         return
 
@@ -102,6 +103,7 @@ def load_logged_in_user():
     if username is None:
         g.user = None
     else:
+        db_conn = get_conn()
         cursor = db_conn.cursor()
         cursor.execute("SELECT * FROM user WHERE username='{}'".format(username))
         user = cursor.fetchone()
@@ -112,6 +114,7 @@ def load_logged_in_user():
 # authenticate user for the login information
 def authenticate(username, password):
     try:
+        db_conn = get_conn()
         cursor = db_conn.cursor()
         # hash_pwd = generate_hashed_password(password)
         sql_stmt = "SELECT * FROM user WHERE username='{}'".format(username)

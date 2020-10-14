@@ -6,6 +6,7 @@ Database initialization implementation file
 
 
 db_conn = None
+cur_config = None
 # will need to install mysql and set up user info
 # run the schema.sql to set up the database with schema tables and initial data
 
@@ -29,10 +30,22 @@ DATABASE_PROD_CONFIG = {
 # initialize the database connection when app creation
 def init_db(env):
     global db_conn
+    global cur_config
     if env == "development":
         db_conn = pymysql.connect(**DATABASE_DEV_CONFIG)
+        cur_config = DATABASE_DEV_CONFIG
     elif env == "production":
         db_conn = pymysql.connect(**DATABASE_PROD_CONFIG)
+        cur_config = DATABASE_PROD_CONFIG
+
+
+# get the connection, re-connect if necessary
+def get_conn():
+    global db_conn
+    global cur_config
+    if not db_conn or not db_conn.open:
+        db_conn = pymysql.connect(**cur_config)
+    return db_conn
 
 
 # close database connection

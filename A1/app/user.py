@@ -2,7 +2,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 
 from app import constants
 from app.api import register_worker
-from app.database import db_conn
+from app.database import get_conn
 from app.login import encrypt_credentials, verify_password
 from app.precheck import login_required, login_admin_required
 
@@ -19,6 +19,7 @@ user management logic file
 @login_admin_required
 def user_management():
     # show a list of user for selection to delete
+    db_conn = get_conn()
     cursor = db_conn.cursor()
     sql_stmt = "SELECT username FROM user WHERE role='{}'".format(constants.USER)
     cursor.execute(sql_stmt)
@@ -66,6 +67,7 @@ def create_user():
 @login_required
 @login_admin_required
 def delete_user():
+    db_conn = get_conn()
     cursor = db_conn.cursor()
     username = request.form.get("username")
     try:
@@ -104,6 +106,7 @@ def change_password(username):
 
     # make queries to the SQL DB to modify the user record
     try:
+        db_conn = get_conn()
         cursor = db_conn.cursor()
         # hash_pwd = generate_hashed_password(old_password)
         sql_stmt = "SELECT * FROM user WHERE username='{}'".format(username)
@@ -139,10 +142,9 @@ def change_security_answer(username):
 
     try:
         new_hash_pwd = encrypt_credentials(new_securityanswer)
+        db_conn = get_conn()
         cursor = db_conn.cursor()
         if g.user[constants.MODIFIED_ANSWER]:
-            # ans = generate_hashed_password(old_securityanswer)
-            # if ans != g.user[3]:
             old_securityanswer = request.form.get("old_securityAnswer")
             if not old_securityanswer:
                 flash("Please provide old security answer", constants.ERROR)
@@ -160,5 +162,4 @@ def change_security_answer(username):
         return redirect(request.url)
     else:
         flash("Security answer is updated successfully", constants.INFO)
-        modified_default = True
-        return render_template("user/profile.html", username=username, security_answer=modified_default)
+        return render_template("user/profile.html", username=username)

@@ -3,7 +3,7 @@ from http import HTTPStatus
 from flask import request
 
 from app import constants
-from app.database import db_conn
+from app.database import get_conn
 from app.login import encrypt_credentials
 
 '''
@@ -33,6 +33,7 @@ def work():
 
     try:
         # check if the user is registered or not
+        db_conn = get_conn()
         cursor = db_conn.cursor()
         sql_stmt = "SELECT * FROM user WHERE username='{}' ".format(username)
         cursor.execute(sql_stmt)

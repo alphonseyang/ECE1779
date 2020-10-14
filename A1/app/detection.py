@@ -6,7 +6,7 @@ from flask import Blueprint, flash, g, render_template, request, redirect, url_f
 
 from FaceMaskDetection import pytorch_infer
 from app import constants
-from app.database import db_conn
+from app.database import get_conn
 from app.precheck import login_required
 
 bp = Blueprint("detection", __name__, url_prefix="/detection")
@@ -71,6 +71,7 @@ def show_image(image_id):
         SELECT image_path, category, num_faces, num_masked, num_unmasked, username FROM image
         WHERE image_id="{}"
         '''.format(image_id)
+        db_conn = get_conn()
         cursor = db_conn.cursor()
         cursor.execute(sql_stmt)
         image_record = cursor.fetchone()
@@ -123,6 +124,7 @@ def upload_file(file_data):
         VALUES ("{}", "{}", {}, {}, {}, {}, "{}")
         '''.format(image_id, dest_relative_path, classify_image_category(mask_info), mask_info.get("num_faces", 0),
                    mask_info.get("num_masked", 0), mask_info.get("num_unmasked", 0), g.user[constants.USERNAME])
+        db_conn = get_conn()
         cursor = db_conn.cursor()
         cursor.execute(sql_stmt)
         db_conn.commit()

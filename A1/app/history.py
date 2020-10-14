@@ -1,7 +1,7 @@
 from flask import Blueprint, flash, render_template, redirect, request
 
 from app import constants
-from app.database import db_conn
+from app.database import get_conn
 from app.precheck import login_required
 
 bp = Blueprint("history", __name__, url_prefix="/history")
@@ -16,6 +16,7 @@ upload history logic implementation file
 def history(username):
     try:
         # query the images for user
+        db_conn = get_conn()
         cursor = db_conn.cursor()
         query = '''SELECT user.username, image.category, image.image_path, image.image_id FROM user JOIN image 
         ON user.username = image.username WHERE user.username = "{}"

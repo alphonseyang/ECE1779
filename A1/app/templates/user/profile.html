@@ -50,7 +50,7 @@
                     <h6 class="card-title text-center">Security Questions: What is your Date of Birth?</h6>
                     <form class="form-signin" method="post" action="{{ '/user/{}'.format(username) }}">
                         <div class="form-label-group">
-                            {%if security_answer %}
+                            {%if g.user[4] %}
                             <input type="password" id="oldsecurityAnswer" class="form-control"
                                    placeholder="Old Security Answer" name="old_securityAnswer"
                                    required>
