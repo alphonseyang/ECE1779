@@ -15,14 +15,14 @@
                     <ul class="card list-group">
                         {% if no_faces_detected %}
                         {% for row in no_faces_detected %}
-                            <p class="card-text">upload : {{ row[4] }}</p>
+                        Uploaded At: {{ row[4] }}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <img src="{{url_for('static', filename=row[2])}}" style="max-height: 80px;">
                             <a href="/detection/{{ row[3] }}">Detail</a>
                         </li>
                         {% endfor %}
                         {% else %}
-                        <p>No Image</p>
+                        No Image
                         {% endif %}
                     </ul>
                 </div>
@@ -37,14 +37,14 @@
                     <ul class="card list-group">
                         {% if all_faces_wear_masks %}
                         {% for row in all_faces_wear_masks %}
-                            <p class="card-text">upload : {{ row[4] }}</p>
+                        Uploaded At: {{ row[4] }}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <img src="{{url_for('static', filename=row[2])}}" style="max-height: 80px;">
                             <a href="/detection/{{ row[3] }}">Detail</a>
                         </li>
                         {% endfor %}
                         {% else %}
-                        <p>No Image</p>
+                        No Image
                         {% endif %}
                     </ul>
                 </div>
@@ -59,14 +59,14 @@
                     <ul class="card list-group">
                         {% if no_faces_wear_masks %}
                         {% for row in no_faces_wear_masks %}
-                            <p class="card-text">upload : {{ row[4] }}</p>
+                        Uploaded At: {{ row[4] }}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <img src="{{url_for('static', filename=row[2])}}" style="max-height: 80px;">
                             <a href="/detection/{{ row[3] }}">Detail</a>
                         </li>
                         {% endfor %}
                         {% else %}
-                        <p>No Image</p>
+                        No Image
                         {% endif %}
                     </ul>
                 </div>
@@ -81,14 +81,14 @@
                     <ul class="card list-group">
                         {% if partial_faces_wear_masks %}
                         {% for row in partial_faces_wear_masks %}
-                            <p class="card-text">upload : {{ row[4] }}</p>
+                        Uploaded At: {{ row[4] }}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <img src="{{url_for('static', filename=row[2])}}" style="max-height: 80px;">
                             <a href="/detection/{{ row[3] }}">Detail</a>
                         </li>
                         {% endfor %}
                         {% else %}
-                        <p>No Image</p>
+                        No Image
                         {% endif %}
                     </ul>
                 </div>

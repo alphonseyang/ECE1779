@@ -13,6 +13,10 @@ def create_app():
     from app import database
     database.init_db(app.config["ENV"])
 
+    # use a constant secret key for database for now
+    # for real case, probably use the CMK stored in AWS SSM Parameter Store and retrieve from there
+    app.secret_key = "ECE1779A1"
+
     # register the blueprint to associate with a separate file and path
     from app import api
     app.register_blueprint(api.bp)
@@ -24,10 +28,6 @@ def create_app():
     app.register_blueprint(user.bp)
     from app import history
     app.register_blueprint(history.bp)
-
-    # use a constant secret key for database for now
-    # for real case, probably use the CMK stored in AWS SSM Parameter Store and retrieve from there
-    app.secret_key = "ECE1779A1"
 
     # auto forward the root index to login
     @app.route("/")
