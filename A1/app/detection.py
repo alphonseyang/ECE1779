@@ -50,12 +50,12 @@ def detect():
                 return redirect(request.url)
 
         # pass all check, upload the file
-        msg, output_info, image_id = upload_file(file_data)
-        if output_info and image_id:
-            flash(msg, constants.INFO)
+        error, output_info, image_id = upload_file(file_data)
+        if not error:
+            flash("Successfully processed image", constants.INFO)
             return redirect(url_for("detection.show_image", image_id=image_id))
         else:
-            flash(msg, constants.ERROR)
+            flash(error, constants.ERROR)
             return redirect(request.url)
 
     return render_template("detection/detection.html")
@@ -128,11 +128,10 @@ def upload_file(file_data):
         db_conn.commit()
 
     except Exception as e:
-        msg = "Unexpected error {}".format(e)
+        error = "Unexpected error {}".format(e)
+        return error, output_info, None
     else:
-        msg = "Successfully processed image"
-
-    return msg, output_info, image_id
+        return None, output_info, image_id
 
 
 # generate file name based on the current user name and time

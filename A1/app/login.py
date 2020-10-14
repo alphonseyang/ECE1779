@@ -92,6 +92,12 @@ def logout():
 # make sure the user credentials are available
 @bp.before_app_request
 def load_logged_in_user():
+    # for the image request, we just skip the user info retrieval
+    if request.path.startswith("/static"):
+        return
+
+    # for normal request, we need to ensure that we have proper user credentials
+    # store username only as we want to hide user credentials from client
     username = session.get("username")
     if username is None:
         g.user = None
@@ -115,13 +121,16 @@ def authenticate(username, password):
     except Exception as e:
         error = "Unexpected error {}".format(e)
     else:
-        verified = verify_password(user[constants.PASSWORD], password)
-        error = None if verified else "Incorrect username or password"
-        if not error and verified:
-            session.clear()
-            session["username"] = user[constants.USERNAME]
-            # load logged in user for api case, normally this will be loaded before every request
-            load_logged_in_user()
+        if user:
+            verified = verify_password(user[constants.PASSWORD], password)
+            error = None if verified else "Incorrect username or password"
+            if not error and verified:
+                session.clear()
+                session["username"] = user[constants.USERNAME]
+                # load logged in user for api case, normally this will be loaded before every request
+                load_logged_in_user()
+        else:
+            error = "User doesn't exist"
     return error
 
 

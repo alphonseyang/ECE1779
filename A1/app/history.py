@@ -17,18 +17,18 @@ def history(username):
     try:
         # query the images for user
         cursor = db_conn.cursor()
-        query = '''SELECT user.username,image.category,image.image_path,image.image_id FROM user JOIN image 
+        query = '''SELECT user.username, image.category, image.image_path, image.image_id FROM user JOIN image 
         ON user.username = image.username WHERE user.username = "{}"
         '''.format(username)
         cursor.execute(query)
+        images = cursor.fetchall()
         db_conn.commit()
+
+        # separate the user images based on the category
         no_faces_detected = []
         all_faces_wear_masks = []
         no_faces_wear_masks = []
         partial_faces_wear_masks = []
-        images = cursor.fetchall()
-
-        # separate the user images based on the category
         for image in images:
             if image[1] == constants.NO_FACES_DETECTED:
                 no_faces_detected.append(image)
