@@ -28,6 +28,9 @@
                     <li class="nav-item">
                         <a href="{{url_for('user.user_profile', username=g.user[0])}}" class="nav-link">Profile</a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{url_for('history.upload_history', username=g.user[0])}}" class="nav-link">History</a>
+                    </li>
                 </ul>
                 <form action="/login/logout" method="post" class="ml-auto">
                     <button name="logoutBtn" type="submit" class="btn btn-secondary">Log Out</button>

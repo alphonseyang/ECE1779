@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <p>category 0: (No face detected in image) </p>
+        {% if uploaded_image0%}
+            {% for row in uploaded_image0 %}
+                <p>image {{ row[3 ]}} </p>
+                <a href="/detection/{{ row[3] }}">  <img src="{{url_for('static', filename=row[2])}}"> </a>
+            {% endfor %}
+        {% else %}
+            <p>no image for category 0: (No face detected in image) </p>
+        {% endif %}
+
+    <p>category 1: (All faces from image are wearing masks)</p>
+        {% if uploaded_image1%}
+            {% for row in uploaded_image1 %}
+                <p>image {{ row[3 ]}} </p>
+                <a href="/detection/{{ row[3] }}">  <img src="{{url_for('static', filename=row[2])}}"> </a>
+            {% endfor %}
+        {% else %}
+            <p>no image for category 1: (All faces from image are wearing masks) </p>
+        {% endif %}
+
+    <p>category 2: (No face from image is wearing masks)</p>
+        {% if uploaded_image2%}
+            {% for row in uploaded_image2 %}
+                <p>image {{ row[3 ]}} </p>
+                <a href="/detection/{{ row[3] }}">  <img src="{{url_for('static', filename=row[2])}}"> </a>
+            {% endfor %}
+        {% else %}
+            <p>no image for category 2: (No face from image is wearing masks) </p>
+        {% endif %}
+
+
+    <p>category 3: (Only some faces from image are wearing masks)</p>
+        {% if uploaded_image3%}
+            {% for row in uploaded_image3 %}
+                <p>image {{ row[3 ]}} </p>
+                <a href="/detection/{{ row[3] }}">  <img src="{{url_for('static', filename=row[2])}}"> </a>
+            {% endfor %}
+        {% else %}
+            <p>no image for category 3: (Only some faces from image are wearing masks) </p>
+        {% endif %}
+
+
+
+{% endblock %}

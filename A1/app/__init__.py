@@ -22,6 +22,8 @@ def create_app():
     app.register_blueprint(detection.bp)
     from app import user
     app.register_blueprint(user.bp)
+    from app import history
+    app.register_blueprint(history.bp)
 
     # use a constant secret key for database for now
     # for real case, probably use the CMK stored in AWS SSM Parameter Store and retrieve from there
