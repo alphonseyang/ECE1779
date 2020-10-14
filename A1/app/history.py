@@ -18,8 +18,8 @@ def history(username):
         # query the images for user
         db_conn = get_conn()
         cursor = db_conn.cursor()
-        query = '''SELECT user.username, image.category, image.image_path, image.image_id FROM user JOIN image 
-        ON user.username = image.username WHERE user.username = "{}"
+        query = '''SELECT user.username, image.category, image.image_path, image.image_id , image.created_at FROM user JOIN image 
+        ON user.username = image.username WHERE user.username = "{}" Order by image.created_at DESC
         '''.format(username)
         cursor.execute(query)
         images = cursor.fetchall()
