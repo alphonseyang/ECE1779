@@ -28,6 +28,8 @@ def login():
 
         error = authenticate(username, password)
         if not error:
+            if not g.user[constants.MODIFIED_ANSWER]:
+                flash("Please please set up your custom security answer ",constants.ERROR)
             flash("Successfully logged in", constants.INFO)
             return redirect(url_for("detection.detect"))
         else:
