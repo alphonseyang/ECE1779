@@ -14,8 +14,8 @@ ADMIN = "admin"
 USER = "user"
 
 # constants for image validation
-RESERVED_NAMES = {"temp", "test", "root"}
 TEN_MB = 1048576
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 # constants for photo categories
 NO_FACES_DETECTED = 0
@@ -29,10 +29,11 @@ CATEGORY_MAP = {
     PARTIAL_FACES_WEAR_MASKS: "Only some faces from image are wearing masks"
 }
 
-
 # constants for detection file location
 # the path is relative to the A1/
 STATIC_PREFIX = "app/static/"
 DEST_FOLDER = "images/"
 TEMP_FOLDER = "app/static/images/temp/"
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+
+# constants for user creation
+RESERVED_NAMES = {"temp", "test", "root"}

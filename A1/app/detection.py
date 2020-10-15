@@ -40,19 +40,25 @@ def detect():
         # check online link provided
         else:
             url = request.form.get("url")
+            # validate URL before calling request.get
             if not url or not validate_url(url):
                 flash("Invalid Online Image URL", constants.ERROR)
                 return redirect(request.url)
-            response = requests.get(url)
-            data_type = response.headers.get("content-type")
-            if not response.ok:
-                flash("Online image doesn't exist", constants.ERROR)
+            try:
+                response = requests.get(url)
+            except Exception:
+                flash("Failed to access link", constants.ERROR)
                 return redirect(request.url)
-            file_data = response.content
-            error = allowed_file(False, data_type=data_type, file_size=len(file_data))
-            if error:
-                flash(error, constants.ERROR)
-                return redirect(request.url)
+            else:
+                data_type = response.headers.get("content-type")
+                if not response.ok:
+                    flash("Online image doesn't exist", constants.ERROR)
+                    return redirect(request.url)
+                file_data = response.content
+                error = allowed_file(False, data_type=data_type, file_size=len(file_data))
+                if error:
+                    flash(error, constants.ERROR)
+                    return redirect(request.url)
 
         # pass all check, upload the file
         error, output_info, image_id = upload_file(file_data)
@@ -149,6 +155,12 @@ def generate_file_name():
     return file_name, image_id
 
 
+# validate url based on the regular expression
+def validate_url(url):
+    regex = r'^[a-z]+://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
+    return True if re.match(regex, url) else False
+
+
 # check file to ensure the sizing and format
 def allowed_file(is_local, file_name=None, file_size=0, data_type=""):
     if file_size > constants.TEN_MB:
@@ -183,9 +195,3 @@ def classify_image_category(mask_info):
         return constants.NO_FACES_WEAR_MASKS
     else:
         return constants.PARTIAL_FACES_WEAR_MASKS
-
-
-# validate url based on the regular expression
-def validate_url(url):
-    regex = r'^[a-z]+://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
-    return True if re.match(regex, url) else False
