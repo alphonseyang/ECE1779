@@ -12,6 +12,8 @@ INFO = "info"
 # constants for role types
 ADMIN = "admin"
 USER = "user"
+
+# constants for image validation
 RESERVED_NAMES = {"temp", "test", "root"}
 TEN_MB = 1048576
 
