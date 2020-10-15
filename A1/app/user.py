@@ -162,4 +162,4 @@ def change_security_answer(username):
         return redirect(request.url)
     else:
         flash("Security answer is updated successfully", constants.INFO)
-        return render_template("user/profile.html", username=username)
+        return redirect(url_for("user.user_profile", username=username))
