@@ -1,6 +1,8 @@
 import os
-from datetime import datetime
+import re
 import uuid
+from datetime import datetime
+
 import requests
 from flask import Blueprint, flash, g, render_template, request, redirect, url_for
 
@@ -37,7 +39,10 @@ def detect():
                 return redirect(request.url)
         # check online link provided
         else:
-            url = request.form["url"]
+            url = request.form.get("url")
+            if not url or not validate_url(url):
+                flash("Invalid Online Image URL", constants.ERROR)
+                return redirect(request.url)
             response = requests.get(url)
             data_type = response.headers.get("content-type")
             if not response.ok:
@@ -178,3 +183,9 @@ def classify_image_category(mask_info):
         return constants.NO_FACES_WEAR_MASKS
     else:
         return constants.PARTIAL_FACES_WEAR_MASKS
+
+
+# validate url based on the regular expression
+def validate_url(url):
+    regex = r'^[a-z]+://(?P<host>[^/:]+)(?P<port>:[0-9]+)?(?P<path>\/.*)?$'
+    return True if re.match(regex, url) else False
