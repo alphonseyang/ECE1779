@@ -1,3 +1,6 @@
+import os
+import shutil
+
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 
 from app import constants
@@ -80,6 +83,10 @@ def delete_user():
         sql_stmt = "DELETE FROM user WHERE username='{}'".format(username)
         cursor.execute(sql_stmt)
         db_conn.commit()
+        # remove all user uploaded images
+        user_image_folder = os.path.join(constants.STATIC_PREFIX, constants.DEST_FOLDER, username)
+        if os.path.exists(user_image_folder):
+            shutil.rmtree(user_image_folder)
     except Exception as e:
         flash("Unexpected error {}".format(e), constants.ERROR)
         return redirect(url_for("user.user_management"))
