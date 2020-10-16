@@ -32,9 +32,9 @@ def work():
     # upload file and check the status
     file_data = file.read()
     error, output_info, _ = upload_file(file_data)
-    if not error:
+    if error:
         status_code = HTTPStatus.INTERNAL_SERVER_ERROR
-        response["error"] = {"code": "UploadFailure", "Message": msg}
+        response["error"] = {"code": "UploadFailure", "Message": error}
     else:
         status_code = HTTPStatus.OK
         response["success"] = True
