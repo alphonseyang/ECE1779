@@ -64,7 +64,7 @@ def password_recovery():
 
             # verify the answer if not default
             if user[constants.MODIFIED_ANSWER] != 0:
-                if verify_password(user[constants.SECURITY_ANSWER], security_answer):
+                if not verify_password(user[constants.SECURITY_ANSWER], security_answer):
                     db_conn.commit()
                     flash("Incorrect security answer", constants.ERROR)
                     return redirect(request.url)
