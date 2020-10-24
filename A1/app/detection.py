@@ -130,14 +130,14 @@ def upload_file(file_data):
         open(temp_file_path, "wb").write(file_data)
         output_info = pytorch_infer.main(temp_file_path, dest_store_path)
         os.remove(temp_file_path)
-        s3_path = store_image_s3(dest_store_path)
+        # s3_path = store_image_s3(dest_store_path)
 
         # insert the record into the SQL DB
         mask_info = extract_mask_info(output_info)
         sql_stmt = '''
         INSERT INTO image (image_id, image_path, category, num_faces, num_masked, num_unmasked, username) 
         VALUES ("{}", "{}", {}, {}, {}, {}, "{}")
-        '''.format(image_id, s3_path, classify_image_category(mask_info), mask_info.get("num_faces", 0),
+        '''.format(image_id, dest_relative_path, classify_image_category(mask_info), mask_info.get("num_faces", 0),
                    mask_info.get("num_masked", 0), mask_info.get("num_unmasked", 0), g.user[constants.USERNAME])
         db_conn = get_conn()
         cursor = db_conn.cursor()
