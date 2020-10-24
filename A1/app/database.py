@@ -18,6 +18,7 @@ DATABASE_DEV_CONFIG = {
     "password": "rootroot",
     "db": "ECE1779A1"
 }
+# TODO: update this to connect to AWS RDS instance
 DATABASE_PROD_CONFIG = {
     "host": "localhost",
     "port": 3306,

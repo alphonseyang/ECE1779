@@ -3,7 +3,9 @@ import re
 import uuid
 from datetime import datetime
 
+import boto3
 import requests
+from botocore.exceptions import ClientError
 from flask import Blueprint, flash, g, render_template, request, redirect, url_for
 
 from FaceMaskDetection import pytorch_infer
@@ -103,6 +105,7 @@ def show_image(image_id):
         flash("Unexpected exception {}".format(e), constants.ERROR)
         return redirect(url_for("detection.detect"))
 
+    # TODO: show image from S3 bucket
     return render_template("detection/show.html", image_record=image_record, category_map=constants.CATEGORY_MAP)
 
 
@@ -127,19 +130,23 @@ def upload_file(file_data):
         open(temp_file_path, "wb").write(file_data)
         output_info = pytorch_infer.main(temp_file_path, dest_store_path)
         os.remove(temp_file_path)
+        s3_path = store_image_s3(dest_store_path)
 
         # insert the record into the SQL DB
         mask_info = extract_mask_info(output_info)
         sql_stmt = '''
         INSERT INTO image (image_id, image_path, category, num_faces, num_masked, num_unmasked, username) 
         VALUES ("{}", "{}", {}, {}, {}, {}, "{}")
-        '''.format(image_id, dest_relative_path, classify_image_category(mask_info), mask_info.get("num_faces", 0),
+        '''.format(image_id, s3_path, classify_image_category(mask_info), mask_info.get("num_faces", 0),
                    mask_info.get("num_masked", 0), mask_info.get("num_unmasked", 0), g.user[constants.USERNAME])
         db_conn = get_conn()
         cursor = db_conn.cursor()
         cursor.execute(sql_stmt)
         db_conn.commit()
 
+    except ClientError as ce:
+        error = "Failed to upload file to S3"
+        return error, output_info, None
     except Exception as e:
         error = "Unexpected error {}".format(e)
         return error, output_info, None
@@ -195,3 +202,14 @@ def classify_image_category(mask_info):
         return constants.NO_FACES_WEAR_MASKS
     else:
         return constants.PARTIAL_FACES_WEAR_MASKS
+
+
+# upload the processed file to s3 and return the stored location
+def store_image_s3(file_path):
+    s3_client = boto3.client("s3")
+    image_data = open(file_path, "rb").read()
+    # remove local stored processed image
+    os.remove(file_path)
+    key_name = "{}/{}".format(g.user[constants.USERNAME], file_path.split("/")[-1])
+    s3_client.put_object(Bucket=constants.BUCKET_NAME, Key=key_name, Body=image_data)
+    return "s3://{}/{}".format(constants.BUCKET_NAME, key_name)

@@ -40,6 +40,8 @@ def history(username):
             elif image[1] == constants.PARTIAL_FACES_WEAR_MASKS:
                 partial_faces_wear_masks.append(image)
 
+        # TODO: display the file from S3
+
         # pass in the image lists to the view
         return render_template("history/history.html",
                                no_faces_detected=no_faces_detected,

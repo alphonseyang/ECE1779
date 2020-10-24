@@ -37,3 +37,6 @@ TEMP_FOLDER = "app/static/images/temp/"
 
 # constants for user creation
 RESERVED_NAMES = {"temp", "test", "root"}
+
+# constants for S3 bucket
+BUCKET_NAME = "ece1779yangkuangwang-bucket"
