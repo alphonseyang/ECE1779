@@ -7,17 +7,18 @@
 
 <div class="container">
     <div class="row">
+        {% for category, images in category_map.items() %}
         <div class="col-sm-9 col-md-6 col-lg-6 mx-auto">
             <div class="card card-signin my-5">
-                <div class="card-header text-center">No face detected in image</div>
+                <div class="card-header text-center">{{ category }}</div>
                 <br>
                 <div class="card-body text-center">
                     <ul class="card list-group">
-                        {% if no_faces_detected %}
-                        {% for row in no_faces_detected %}
+                        {% if images %}
+                        {% for row in images %}
                         Uploaded At: {{ row[4] }} (UTC)
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <img src="{{url_for('static', filename=row[2])}}" style="max-height: 80px;">
+                            <img src="{{ row[2] if is_remote else url_for('static', filename=row[2]) }}" style="max-height: 80px;">
                             <a href="/detection/{{ row[3] }}">Detail</a>
                         </li>
                         {% endfor %}
@@ -28,73 +29,7 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-9 col-md-6 col-lg-6 mx-auto">
-            <div class="card card-signin my-5">
-                <div class="card-header text-center">All faces from image are wearing masks</div>
-                <br>
-                <div class="card-body text-center">
-                    <ul class="card list-group">
-                        {% if all_faces_wear_masks %}
-                        {% for row in all_faces_wear_masks %}
-                        Uploaded At: {{ row[4] }} (UTC)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <img src="{{url_for('static', filename=row[2])}}" style="max-height: 80px;">
-                            <a href="/detection/{{ row[3] }}">Detail</a>
-                        </li>
-                        {% endfor %}
-                        {% else %}
-                        No Image
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-9 col-md-6 col-lg-6 mx-auto">
-            <div class="card card-signin my-5">
-                <div class="card-header text-center">No faces from image are wearing masks</div>
-                <br>
-                <div class="card-body text-center">
-                    <ul class="card list-group">
-                        {% if no_faces_wear_masks %}
-                        {% for row in no_faces_wear_masks %}
-                        Uploaded At: {{ row[4] }} (UTC)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <img src="{{url_for('static', filename=row[2])}}" style="max-height: 80px;">
-                            <a href="/detection/{{ row[3] }}">Detail</a>
-                        </li>
-                        {% endfor %}
-                        {% else %}
-                        No Image
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-9 col-md-6 col-lg-6 mx-auto">
-            <div class="card card-signin my-5">
-                <div class="card-header text-center">Only some faces from image are wearing masks</div>
-                <br>
-                <div class="card-body text-center">
-                    <ul class="card list-group">
-                        {% if partial_faces_wear_masks %}
-                        {% for row in partial_faces_wear_masks %}
-                        Uploaded At: {{ row[4] }} (UTC)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <img src="{{url_for('static', filename=row[2])}}" style="max-height: 80px;">
-                            <a href="/detection/{{ row[3] }}">Detail</a>
-                        </li>
-                        {% endfor %}
-                        {% else %}
-                        No Image
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-
+        {% endfor %}
     </div>
 </div>
 </body>

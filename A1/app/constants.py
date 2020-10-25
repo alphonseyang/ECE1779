@@ -40,3 +40,6 @@ RESERVED_NAMES = {"temp", "test", "root"}
 
 # constants for S3 bucket
 BUCKET_NAME = "ece1779yangkuangwang-bucket"
+
+# constants used to control local or AWS storage
+IS_REMOTE = False

@@ -105,8 +105,10 @@ def show_image(image_id):
         flash("Unexpected exception {}".format(e), constants.ERROR)
         return redirect(url_for("detection.detect"))
 
-    # TODO: show image from S3 bucket
-    return render_template("detection/show.html", image_record=image_record, category_map=constants.CATEGORY_MAP)
+    return render_template("detection/show.html",
+                           image_record=image_record,
+                           category_map=constants.CATEGORY_MAP,
+                           is_remote=constants.IS_REMOTE)
 
 
 # main logic to upload file and save records
@@ -130,7 +132,11 @@ def upload_file(file_data):
         open(temp_file_path, "wb").write(file_data)
         output_info = pytorch_infer.main(temp_file_path, dest_store_path)
         os.remove(temp_file_path)
-        # s3_path = store_image_s3(dest_store_path)
+
+        # for easier switch between local dev and prod usage
+        if constants.IS_REMOTE:
+            s3_path = store_image_s3(dest_store_path)
+            dest_relative_path = s3_path
 
         # insert the record into the SQL DB
         mask_info = extract_mask_info(output_info)
@@ -211,5 +217,6 @@ def store_image_s3(file_path):
     # remove local stored processed image
     os.remove(file_path)
     key_name = "{}/{}".format(g.user[constants.USERNAME], file_path.split("/")[-1])
-    s3_client.put_object(Bucket=constants.BUCKET_NAME, Key=key_name, Body=image_data)
-    return "s3://{}/{}".format(constants.BUCKET_NAME, key_name)
+    # allow access for the s3 object in order to be displayed properly
+    s3_client.put_object(Bucket=constants.BUCKET_NAME, Key=key_name, Body=image_data, ACL='public-read')
+    return "https://{}.s3.amazonaws.com/{}".format(constants.BUCKET_NAME, key_name)

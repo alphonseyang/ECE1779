@@ -39,15 +39,17 @@ def history(username):
                 no_faces_wear_masks.append(image)
             elif image[1] == constants.PARTIAL_FACES_WEAR_MASKS:
                 partial_faces_wear_masks.append(image)
-
-        # TODO: display the file from S3
+        category_map = {
+            "No face detected in image": no_faces_detected,
+            "All faces from image are wearing masks": all_faces_wear_masks,
+            "No faces from image are wearing masks": no_faces_wear_masks,
+            "Only some faces from image are wearing masks": partial_faces_wear_masks
+        }
 
         # pass in the image lists to the view
         return render_template("history/history.html",
-                               no_faces_detected=no_faces_detected,
-                               all_faces_wear_masks=all_faces_wear_masks,
-                               no_faces_wear_masks=no_faces_wear_masks,
-                               partial_faces_wear_masks=partial_faces_wear_masks)
+                               category_map=category_map,
+                               is_remote=constants.IS_REMOTE)
     except Exception as e:
         flash("Unexpected error {}".format(e), constants.ERROR)
         return redirect(request.url)

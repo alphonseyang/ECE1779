@@ -1,5 +1,7 @@
 import pymysql
 
+from app import constants
+
 '''
 Database initialization implementation file
 '''
@@ -18,8 +20,15 @@ DATABASE_DEV_CONFIG = {
     "password": "rootroot",
     "db": "ECE1779A1"
 }
-# TODO: update this to connect to AWS RDS instance
-DATABASE_PROD_CONFIG = {
+DATABASE_PROD_LOCAL_CONFIG = {
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "password": "ece1779pass",
+    "db": "ECE1779A1"
+}
+# TODO: use RDS endpoint here
+DATABASE_PROD_RDS_CONFIG = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
@@ -32,12 +41,18 @@ DATABASE_PROD_CONFIG = {
 def init_db(env):
     global db_conn
     global cur_config
-    if env == "development":
-        db_conn = pymysql.connect(**DATABASE_DEV_CONFIG)
-        cur_config = DATABASE_DEV_CONFIG
-    elif env == "production":
-        db_conn = pymysql.connect(**DATABASE_PROD_CONFIG)
-        cur_config = DATABASE_PROD_CONFIG
+    # AWS RDS set up
+    if constants.IS_REMOTE:
+        db_conn = pymysql.connect(**DATABASE_PROD_RDS_CONFIG)
+        cur_config = DATABASE_PROD_RDS_CONFIG
+    # old local MySQL usage
+    else:
+        if env == "development":
+            db_conn = pymysql.connect(**DATABASE_DEV_CONFIG)
+            cur_config = DATABASE_DEV_CONFIG
+        elif env == "production":
+            db_conn = pymysql.connect(**DATABASE_PROD_LOCAL_CONFIG)
+            cur_config = DATABASE_PROD_LOCAL_CONFIG
 
 
 # get the connection, re-connect if necessary
