@@ -15,7 +15,7 @@ def create_app():
 
     # use a constant secret key for database for now
     # for real case, probably use the CMK stored in AWS SSM Parameter Store and retrieve from there
-    app.secret_key = "ECE1779A1"
+    app.secret_key = "ECE1779"
 
     # register the blueprint to associate with a separate file and path
     from app import api

@@ -28,3 +28,10 @@ Since the start.sh is designed to run on top of EC2 instance, so the path is wri
 folder in EC2 instance. The start.sh creates the log files and then use the gunicorn to start the flask application in 
 localhost:5000 with 8 workers (chose based on the t2.medium vCPU numbers). The 5000 port will be exposed to the outside 
 by the security group attached to the EC2 instance
+
+### Enable Remote Mode Locally
+1. change the IS_REMOTE to True in constants.py file
+2. make sure you have the AWS credentials from Educate account in your ~/.aws/credentials file
+3. start the RDS instance in AWS
+4. start Flask app as usual, you should have the RDS DB and file stored in S3
+5. if unable to connect, make sure your IP is listed in the security group assigned to the RDS instance (rds-sg-1), use the existing one as an example

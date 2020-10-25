@@ -18,22 +18,21 @@ DATABASE_DEV_CONFIG = {
     "port": 3306,
     "user": "root",
     "password": "rootroot",
-    "db": "ECE1779A1"
+    "db": "ECE1779"
 }
 DATABASE_PROD_LOCAL_CONFIG = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
     "password": "ece1779pass",
-    "db": "ECE1779A1"
+    "db": "ECE1779"
 }
-# TODO: use RDS endpoint here
 DATABASE_PROD_RDS_CONFIG = {
-    "host": "localhost",
+    "host": "ece1779yangkuangwang-db.cysdmtlxkjur.us-east-1.rds.amazonaws.com",
     "port": 3306,
     "user": "root",
-    "password": "ece1779pass",
-    "db": "ECE1779A1"
+    "password": "ECE1779pass.",
+    "db": "ECE1779"
 }
 
 
