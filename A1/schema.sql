@@ -17,7 +17,9 @@ INSERT INTO user (username, password, role,security_answer) VALUES ("root", "196
 
 CREATE TABLE image (
     image_id varchar(255) NOT NULL,
-    image_path varchar(255) NOT NULL,
+    processed_image_path varchar(255) NOT NULL,
+    unprocessed_image_path varchar(255) NOT NULL,
+    thumbnail_image_path varchar(255) NOT NULL,
     category int NOT NULL,
     num_faces int NOT NULL,
     num_masked int NOT NULL,

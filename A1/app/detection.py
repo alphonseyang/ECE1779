@@ -5,6 +5,7 @@ from datetime import datetime
 
 import boto3
 import requests
+from PIL import Image
 from botocore.exceptions import ClientError
 from flask import Blueprint, flash, g, render_template, request, redirect, url_for
 
@@ -81,8 +82,8 @@ def show_image(image_id):
     try:
         # query image data from the database
         sql_stmt = '''
-        SELECT image_path, category, num_faces, num_masked, num_unmasked, username FROM image
-        WHERE image_id="{}"
+        SELECT processed_image_path, unprocessed_image_path, thumbnail_image_path, category, num_faces, 
+        num_masked, num_unmasked, username FROM image WHERE image_id="{}"
         '''.format(image_id)
         db_conn = get_conn()
         cursor = db_conn.cursor()
@@ -116,34 +117,45 @@ def upload_file(file_data):
     # file directory processing
     output_info = None
     output_file_name, image_id = generate_file_name()
-    user_image_folder = constants.DEST_FOLDER + g.user[constants.USERNAME] + "/"
-    dest_relative_path = os.path.join(user_image_folder, output_file_name)
-    dest_store_path = os.path.join(constants.STATIC_PREFIX, dest_relative_path)
-    temp_file_path = os.path.join(constants.TEMP_FOLDER, output_file_name)
+    username = g.user[constants.USERNAME]
+    processed_path = os.path.join(constants.PROCESSED_FOLDER.format(username), output_file_name)
+    original_path = os.path.join(constants.UNPROCESSED_FOLDER.format(username), output_file_name)
+    thumbnail_path = os.path.join(constants.THUMBNAIL_FOLDER.format(username), output_file_name)
 
     # make directory if not exist to prevent issue
-    if not os.path.exists(os.path.join(constants.STATIC_PREFIX, user_image_folder)):
-        os.makedirs(os.path.join(constants.STATIC_PREFIX, user_image_folder))
-    if not os.path.exists(constants.TEMP_FOLDER):
-        os.makedirs(constants.TEMP_FOLDER)
+    if not os.path.exists(constants.PROCESSED_FOLDER.format(username)):
+        os.makedirs(constants.PROCESSED_FOLDER.format(username))
+    if not os.path.exists(constants.UNPROCESSED_FOLDER.format(username)):
+        os.makedirs(constants.UNPROCESSED_FOLDER.format(username))
+    if not os.path.exists(constants.THUMBNAIL_FOLDER.format(username)):
+        os.makedirs(constants.THUMBNAIL_FOLDER.format(username))
 
     try:
         # store the original file and do the detection
-        open(temp_file_path, "wb").write(file_data)
-        output_info = pytorch_infer.main(temp_file_path, dest_store_path)
-        os.remove(temp_file_path)
+        open(original_path, "wb").write(file_data)
+        image = Image.open(original_path)
+        image.thumbnail((80, 80))
+        image.save(thumbnail_path)
+        output_info = pytorch_infer.main(original_path, processed_path)
 
         # for easier switch between local dev and prod usage
         if constants.IS_REMOTE:
-            s3_path = store_image_s3(dest_store_path)
-            dest_relative_path = s3_path
+            paths = {"processed": processed_path, "original": original_path, "thumbnail": thumbnail_path}
+            paths = store_image_s3(paths)
+            processed_path = paths["processed"]
+            original_path = paths["original"]
+            thumbnail_path = paths["thumbnail"]
+        else:
+            processed_path = processed_path[len(constants.STATIC_PREFIX):]
+            original_path = original_path[len(constants.STATIC_PREFIX):]
+            thumbnail_path = thumbnail_path[len(constants.STATIC_PREFIX):]
 
         # insert the record into the SQL DB
         mask_info = extract_mask_info(output_info)
         sql_stmt = '''
-        INSERT INTO image (image_id, image_path, category, num_faces, num_masked, num_unmasked, username) 
-        VALUES ("{}", "{}", {}, {}, {}, {}, "{}")
-        '''.format(image_id, dest_relative_path, classify_image_category(mask_info), mask_info.get("num_faces", 0),
+        INSERT INTO image (image_id, processed_image_path, unprocessed_image_path, thumbnail_image_path, category, 
+        num_faces, num_masked, num_unmasked, username) VALUES ("{}", "{}", "{}", "{}", {}, {}, {}, {}, "{}")
+        '''.format(image_id, processed_path, original_path, thumbnail_path, classify_image_category(mask_info), mask_info.get("num_faces", 0),
                    mask_info.get("num_masked", 0), mask_info.get("num_unmasked", 0), g.user[constants.USERNAME])
         db_conn = get_conn()
         cursor = db_conn.cursor()
@@ -211,12 +223,15 @@ def classify_image_category(mask_info):
 
 
 # upload the processed file to s3 and return the stored location
-def store_image_s3(file_path):
+def store_image_s3(paths):
     s3_client = boto3.client("s3")
-    image_data = open(file_path, "rb").read()
-    # remove local stored processed image
-    os.remove(file_path)
-    key_name = "{}/{}".format(g.user[constants.USERNAME], file_path.split("/")[-1])
-    # allow access for the s3 object in order to be displayed properly
-    s3_client.put_object(Bucket=constants.BUCKET_NAME, Key=key_name, Body=image_data, ACL='public-read')
-    return "https://{}.s3.amazonaws.com/{}".format(constants.BUCKET_NAME, key_name)
+    result = dict()
+    for image_type, path in paths.items():
+        image_data = open(path, "rb").read()
+        key_name = "{}/{}/{}".format(g.user[constants.USERNAME], image_type, path.split("/")[-1])
+        # allow access for the s3 object in order to be displayed properly
+        result[image_type] = "https://{}.s3.amazonaws.com/{}".format(constants.BUCKET_NAME, key_name)
+        s3_client.put_object(Bucket=constants.BUCKET_NAME, Key=key_name, Body=image_data, ACL='public-read')
+        # remove local stored processed image
+        os.remove(path)
+    return result

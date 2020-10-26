@@ -1,6 +1,8 @@
 import os
 import shutil
 
+import boto3
+from botocore.exceptions import ClientError
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 
 from app import constants
@@ -82,15 +84,28 @@ def delete_user():
             return redirect(url_for("user.user_management"))
         sql_stmt = "DELETE FROM user WHERE username='{}'".format(username)
         cursor.execute(sql_stmt)
-        db_conn.commit()
         # remove all user uploaded images
-        user_image_folder = os.path.join(constants.STATIC_PREFIX, constants.DEST_FOLDER, username)
-        if os.path.exists(user_image_folder):
-            shutil.rmtree(user_image_folder)
+        if constants.IS_REMOTE:
+            # remove the images stored in S3 as well
+            s3_client = boto3.client("s3")
+            response = delete_user_images_s3(s3_client, username)
+            # if there's still something to delete
+            while response.get("IsTruncated"):
+                response = delete_user_images_s3(s3_client, username)
+        else:
+            user_image_folder = constants.USER_FOLDER.format(username)
+            if os.path.exists(user_image_folder):
+                shutil.rmtree(user_image_folder)
+    except ClientError as ce:
+        db_conn.rollback()
+        flash("Failed to delete images in S3", constants.ERROR)
+        return redirect(url_for("user.user_management"))
     except Exception as e:
+        db_conn.rollback()
         flash("Unexpected error {}".format(e), constants.ERROR)
         return redirect(url_for("user.user_management"))
     else:
+        db_conn.commit()
         flash("Successfully deleted user with username {}".format(username), constants.INFO)
         return redirect(url_for("user.user_management"))
 
@@ -170,3 +185,11 @@ def change_security_answer(username):
     else:
         flash("Security answer is updated successfully", constants.INFO)
         return redirect(url_for("user.user_profile", username=username))
+
+
+# delete the images from s3 bucket
+def delete_user_images_s3(s3_client, username):
+    response = s3_client.list_objects_v2(Bucket=constants.BUCKET_NAME, Prefix=username + "/")
+    keys = {"Objects": [{"Key": file["Key"]} for file in response["Contents"]]}
+    s3_client.delete_objects(Bucket=constants.BUCKET_NAME, Delete=keys)
+    return response

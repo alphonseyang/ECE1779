@@ -13,11 +13,14 @@
                 <div class="card-body text-center">
                     <form class="md-form" method="post" enctype=multipart/form-data>
                         <div class="file-field">
+                            <p>Processed Image</p>
                             <img src="{{ image_record[0] if is_remote else url_for('static', filename=image_record[0]) }}" height="400"><br>
-                            <p>Result: {{category_map[image_record[1]]}}</p>
-                            <p>Number of Faces Detected: {{image_record[2]}}</p>
-                            <p>Number of Faces Wearing Masks: {{image_record[3]}}</p>
-                            <p>Number of Faces Not Wearing Masks: {{image_record[4]}}</p>
+                            <p>Unprocessed Image</p>
+                            <img src="{{ image_record[1] if is_remote else url_for('static', filename=image_record[1]) }}" height="400"><br>
+                            <p>Result: {{category_map[image_record[2]]}}</p>
+                            <p>Number of Faces Detected: {{image_record[3]}}</p>
+                            <p>Number of Faces Wearing Masks: {{image_record[4]}}</p>
+                            <p>Number of Faces Not Wearing Masks: {{image_record[5]}}</p>
                         </div>
                     </form>
                     <button onclick="goBack()" class="btn btn-primary">Go Back</button>

@@ -32,8 +32,10 @@ CATEGORY_MAP = {
 # constants for detection file location
 # the path is relative to the A1/
 STATIC_PREFIX = "app/static/"
-DEST_FOLDER = "images/"
-TEMP_FOLDER = "app/static/images/temp/"
+USER_FOLDER = "app/static/images/{}"
+PROCESSED_FOLDER = "app/static/images/{}/processed/"
+UNPROCESSED_FOLDER = "app/static/images/{}/unprocessed/"
+THUMBNAIL_FOLDER = "app/static/images/{}/thumbnail/"
 
 # constants for user creation
 RESERVED_NAMES = {"temp", "test", "root"}
