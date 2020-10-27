@@ -7,3 +7,25 @@ TODO: this should be a background thread that monitors the
     2. check the CPU utilization (CloudWatch) for each worker per minute
     3. worker size is 1 to 8
 """
+import time
+
+from app import constants, manager
+
+
+def start():
+    while True:
+        try:
+            # use lock when updating the shared workers map
+            with manager.lock:
+                manager.workers_map = {1: 2}
+                print(manager.workers_map)
+        except Exception as e:
+            print(e)
+        finally:
+            # execute every one minute
+            time.sleep(constants.AUTO_SCALING_WAIT_SECONDS)
+
+
+# TODO: check the past two minutes average for all workers to determine
+def make_decision():
+    pass

@@ -1,5 +1,8 @@
+from threading import Lock, Thread
+
 from flask import Flask
 
+from app import auto_scaler, manager
 '''
 main app factory that creates the flask app
 '''
@@ -11,5 +14,13 @@ def create_app():
 
     from app import main
     app.register_blueprint(main.bp)
+
+    # initialize during app creation
+    manager.app_initialization()
+
+    # start the auto-scaler as the background thread
+    thread = Thread(target=auto_scaler.start)
+    thread.daemon = True
+    thread.start()
 
     return app

@@ -2,6 +2,7 @@
 ERROR = "error"
 INFO = "info"
 
-# constants related to the worker max/min limit
+# constants used by auto scaler
 MAX_WORKER_NUM = 8
 MIN_WORKER_NUM = 1
+AUTO_SCALING_WAIT_SECONDS = 60
