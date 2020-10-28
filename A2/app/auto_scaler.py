@@ -6,6 +6,8 @@ TODO: this should be a background thread that monitors the
     1. this should be a long-running thread, running with manager app
     2. check the CPU utilization (CloudWatch) for each worker per minute
     3. worker size is 1 to 8
+    4. every minute, check if the workers in the workers_map have changed, if so, update the workers_map
+        for the start->running worker, register them to the ELB as well
 
     idea: start the EC2 first and record them in the workers_map with state,
     then every time we do the auto-scaling check or refresh the page or manually change,

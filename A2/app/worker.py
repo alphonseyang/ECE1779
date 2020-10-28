@@ -17,3 +17,13 @@ def create_worker():
 #   by stopping the worker EC2 instance
 def destroy_worker():
     pass
+
+
+# TODO: register worker instance to the ELB, done by the auto-sclaer
+def register_worker():
+    pass
+
+
+# TODO: deregister the worker instance from ELB, both manual shrink and auto-scaler can do it
+def deregister_worker():
+    pass
