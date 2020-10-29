@@ -1,8 +1,10 @@
 import time
 from datetime import datetime
+from http import HTTPStatus
 from threading import Lock
 
 import boto3
+import requests
 
 from app import constants
 
@@ -44,6 +46,10 @@ def collect_requests_count(instance_id):
 # get the instance id to uniquely label the data points
 def get_instance_id():
     if constants.IS_REMOTE:
-        return "remote"  # TODO: need to find the instance id on EC2
+        response = requests.get(constants.INSTANCE_ID_URL)
+        if response.status_code != HTTPStatus.OK:
+            return "remote"
+        else:
+            return response.content.decode()
     else:
         return "local"
