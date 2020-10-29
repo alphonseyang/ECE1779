@@ -1,4 +1,8 @@
+from threading import Thread
+
 from flask import Flask, redirect, url_for
+
+from app import data_collector
 
 '''
 main app factory that creates the flask app
@@ -33,6 +37,12 @@ def create_app():
     @app.route("/")
     def root_index():
         return redirect(url_for("login.login"))
+
+    # start the auto-scaler as the background thread
+    instance_id = data_collector.get_instance_id()
+    thread = Thread(target=data_collector.collect_requests_count, args=(instance_id,))
+    thread.daemon = True
+    thread.start()
 
     return app
 

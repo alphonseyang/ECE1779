@@ -45,3 +45,6 @@ BUCKET_NAME = "ece1779yangkuangwang-bucket"
 
 # constants used to control local or AWS storage
 IS_REMOTE = True
+
+# constants for CloudWatch reporting
+AUTO_COLLECT_WAIT_TIME = 60
