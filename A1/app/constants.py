@@ -48,3 +48,6 @@ IS_REMOTE = True
 
 # constants for CloudWatch reporting
 AUTO_COLLECT_WAIT_TIME = 60
+
+# constants for EC2 instance ID
+INSTANCE_ID_URL = "http://169.254.169.254/latest/meta-data/instance-id/"
