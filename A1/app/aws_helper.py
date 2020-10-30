@@ -7,21 +7,21 @@ from threading import Lock
 import boto3
 import dateutil.parser
 import requests
-from flask import current_app
 
 from app import constants
 
 requests_count = 0
 lock = Lock()
 expires = datetime.utcnow()
+session = boto3.Session()
 
 
 # background thread that push the data to CloudWatch
-def collect_requests_count(instance_id, session):
+def collect_requests_count(instance_id):
+    global session, requests_count
     while True:
         try:
             with lock:
-                global requests_count
                 current_timestamp = datetime.fromtimestamp((datetime.utcnow().timestamp() // 60 - 1) * 60)
                 cloudwatch = session.client("cloudwatch")
                 cloudwatch.put_metric_data(
@@ -62,6 +62,7 @@ def get_instance_id():
 
 # retrieve the credentials from the AWS IAM Role
 def get_credentials():
+    global session, expires
     if constants.IS_REMOTE:
         # retrieve AWS credentials
         response = requests.get(constants.ROLE_CREDENTIALS_URL)
@@ -71,18 +72,15 @@ def get_credentials():
             aws_secret_access_key=result["SecretAccessKey"],
             aws_session_token=result["Token"]
         )
-        global expires
         expires = dateutil.parser.parse(result["Expiration"])
-        print("INFO: credentials expires at {}".format(expires))
-        return session
+        print("INFO: successfully retrieved new credentials, expires at {}".format(expires))
     else:
         expires = datetime(2030, 1, 1)
-        return boto3.Session()
+        session = boto3.Session()
 
 
 # if the credentials expires, renew
 def check_credentials_expire():
-    global expires
-    if datetime.utcnow() + timedelta(minutes=5) > expires:
-        session = get_credentials()
-        current_app.session = session
+    global session
+    # if datetime.utcnow() + timedelta(minutes=5) > expires:
+    get_credentials()

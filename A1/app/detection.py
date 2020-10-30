@@ -6,10 +6,11 @@ from datetime import datetime
 import requests
 from PIL import Image
 from botocore.exceptions import ClientError
-from flask import Blueprint, current_app, flash, g, render_template, request, redirect, url_for
+from flask import Blueprint, flash, g, render_template, request, redirect, url_for
 
 from FaceMaskDetection import pytorch_infer
 from app import constants
+from app.aws_helper import session
 from app.database import get_conn
 from app.precheck import login_required
 
@@ -223,7 +224,7 @@ def classify_image_category(mask_info):
 
 # upload the processed file to s3 and return the stored location
 def store_image_s3(paths):
-    s3_client = current_app.session.client("s3")
+    s3_client = session.client("s3")
     result = dict()
     for image_type, path in paths.items():
         image_data = open(path, "rb").read()
