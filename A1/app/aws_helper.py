@@ -6,6 +6,7 @@ from threading import Lock
 
 import boto3
 import dateutil.parser
+import pytz
 import requests
 
 from app import constants
@@ -42,7 +43,7 @@ def collect_requests_count(instance_id):
                 requests_count = 0
         except Exception as e:
             # for error log purpose
-            print("ERROR: CloudWatch Collector Issue {}".format(e))
+            print("ERROR: CloudWatch Collector Issue: {}".format(e))
         finally:
             # execute every one minute
             time.sleep(constants.AUTO_COLLECT_WAIT_TIME)
@@ -82,5 +83,7 @@ def get_credentials():
 # if the credentials expires, renew
 def check_credentials_expire():
     global session
-    if datetime.utcnow() + timedelta(minutes=5) > expires:
+    now = datetime.utcnow()
+    now = now.replace(tzinfo=pytz.utc)
+    if now + timedelta(minutes=5) > expires:
         get_credentials()
