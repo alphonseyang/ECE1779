@@ -13,7 +13,7 @@ from app import constants
 
 requests_count = 0
 lock = Lock()
-expires = datetime.utcnow()
+expires = datetime.utcnow().replace(tzinfo=pytz.utc)
 session = boto3.Session()
 
 
@@ -83,7 +83,5 @@ def get_credentials():
 # if the credentials expires, renew
 def check_credentials_expire():
     global session
-    now = datetime.utcnow()
-    now = now.replace(tzinfo=pytz.utc)
-    if now + timedelta(minutes=5) > expires:
+    if datetime.utcnow().replace(tzinfo=pytz.utc) + timedelta(minutes=5) > expires:
         get_credentials()
