@@ -82,5 +82,5 @@ def get_credentials():
 # if the credentials expires, renew
 def check_credentials_expire():
     global session
-    # if datetime.utcnow() + timedelta(minutes=5) > expires:
-    get_credentials()
+    if datetime.utcnow() + timedelta(minutes=5) > expires:
+        get_credentials()
