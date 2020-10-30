@@ -1,16 +1,19 @@
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from http import HTTPStatus
 from threading import Lock
 
 import boto3
+import dateutil.parser
 import requests
+from flask import current_app
 
 from app import constants
 
 requests_count = 0
 lock = Lock()
+expires = datetime.utcnow()
 
 
 # background thread that push the data to CloudWatch
@@ -35,6 +38,7 @@ def collect_requests_count(instance_id, session):
                     Namespace='ECE1779/TRAFFIC'
                 )
                 print("INFO: the past one minute has {} requests, time {}".format(requests_count, current_timestamp))
+                check_credentials_expire()
                 requests_count = 0
         except Exception as e:
             # for error log purpose
@@ -56,6 +60,7 @@ def get_instance_id():
         return "local"
 
 
+# retrieve the credentials from the AWS IAM Role
 def get_credentials():
     if constants.IS_REMOTE:
         # retrieve AWS credentials
@@ -66,6 +71,18 @@ def get_credentials():
             aws_secret_access_key=result["SecretAccessKey"],
             aws_session_token=result["Token"]
         )
+        global expires
+        expires = dateutil.parser.parse(result["Expiration"])
+        print("INFO: credentials expires at {}".format(expires))
         return session
     else:
+        expires = datetime(2030, 1, 1)
         return boto3.Session()
+
+
+# if the credentials expires, renew
+def check_credentials_expire():
+    global expires
+    if datetime.utcnow() + timedelta(minutes=5) > expires:
+        session = get_credentials()
+        current_app.session = session
