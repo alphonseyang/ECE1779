@@ -1,9 +1,8 @@
 import os
 import shutil
 
-import boto3
 from botocore.exceptions import ClientError
-from flask import Blueprint, flash, g, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, g, redirect, render_template, request, url_for
 
 from app import constants
 from app.api import register_worker
@@ -87,7 +86,7 @@ def delete_user():
         # remove all user uploaded images
         if constants.IS_REMOTE:
             # remove the images stored in S3 as well
-            s3_client = boto3.client("s3")
+            s3_client = current_app.session.client("s3")
             response = delete_user_images_s3(s3_client, username)
             # if there's still something to delete
             while response.get("IsTruncated"):

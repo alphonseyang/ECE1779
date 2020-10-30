@@ -1,3 +1,4 @@
+import json
 import time
 from datetime import datetime
 from http import HTTPStatus
@@ -10,16 +11,16 @@ from app import constants
 
 requests_count = 0
 lock = Lock()
-cloudwatch = boto3.client("cloudwatch")
 
 
 # background thread that push the data to CloudWatch
-def collect_requests_count(instance_id):
+def collect_requests_count(instance_id, session):
     while True:
         try:
             with lock:
                 global requests_count
                 current_timestamp = datetime.fromtimestamp((datetime.utcnow().timestamp() // 60 - 1) * 60)
+                cloudwatch = session.client("cloudwatch")
                 cloudwatch.put_metric_data(
                     MetricData=[{
                         'MetricName': 'Requests',
@@ -53,3 +54,18 @@ def get_instance_id():
             return response.content.decode()
     else:
         return "local"
+
+
+def get_credentials():
+    if constants.IS_REMOTE:
+        # retrieve AWS credentials
+        response = requests.get(constants.ROLE_CREDENTIALS_URL)
+        result = json.loads(response.content.decode())
+        session = boto3.Session(
+            aws_access_key_id=result["AccessKeyId"],
+            aws_secret_access_key=result["SecretAccessKey"],
+            aws_session_token=result["Token"]
+        )
+        return session
+    else:
+        return boto3.Session()

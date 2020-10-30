@@ -1,8 +1,11 @@
+import json
 from threading import Thread
 
+import boto3
+import requests
 from flask import Flask, redirect, url_for
 
-from app import data_collector
+from app import aws_helper, constants
 
 '''
 main app factory that creates the flask app
@@ -38,9 +41,13 @@ def create_app():
     def root_index():
         return redirect(url_for("login.login"))
 
+    # store the session
+    session = aws_helper.get_credentials()
+    app.session = session
+
     # start the auto-scaler as the background thread
-    instance_id = data_collector.get_instance_id()
-    thread = Thread(target=data_collector.collect_requests_count, args=(instance_id,))
+    instance_id = aws_helper.get_instance_id()
+    thread = Thread(target=aws_helper.collect_requests_count, args=(instance_id, session,))
     thread.daemon = True
     thread.start()
 

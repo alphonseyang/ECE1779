@@ -4,7 +4,7 @@ import os
 
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
-from app import constants, data_collector
+from app import constants, aws_helper
 from app.database import get_conn
 from app.precheck import already_login
 
@@ -96,8 +96,8 @@ def logout():
 @bp.before_app_request
 def load_logged_in_user():
     # keep track of requests on CloudWatch
-    with data_collector.lock:
-        data_collector.requests_count += 1
+    with aws_helper.lock:
+        aws_helper.requests_count += 1
 
     # for the image request, we just skip the user info retrieval to avoid overloading DB
     if request.path.startswith("/static"):

@@ -44,10 +44,11 @@ RESERVED_NAMES = {"temp", "test", "root"}
 BUCKET_NAME = "ece1779yangkuangwang-bucket"
 
 # constants used to control local or AWS storage
-IS_REMOTE = True
+IS_REMOTE = False
 
 # constants for CloudWatch reporting
 AUTO_COLLECT_WAIT_TIME = 60
 
 # constants for EC2 instance ID
 INSTANCE_ID_URL = "http://169.254.169.254/latest/meta-data/instance-id/"
+ROLE_CREDENTIALS_URL = "http://169.254.169.254/latest/meta-data/iam/security-credentials/ECE1779YangWangKuang-WorkerRole"
