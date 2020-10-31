@@ -12,8 +12,8 @@ def create_app():
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
 
-    from app import main
-    app.register_blueprint(main.bp)
+    from app import manager
+    app.register_blueprint(manager.bp)
 
     # initialize during app creation
     manager.app_initialization()

@@ -23,8 +23,23 @@ def start():
         try:
             # use lock when updating the shared workers map
             with manager.lock:
-                manager.workers_map = {1: 2}
-                print(manager.workers_map)
+                # update the number of workers in the pool history
+                manager.workers_num_history.insert(0, len(manager.workers_map))
+                manager.workers_num_history.pop()
+
+                # auto-scaler algorithm to check for decision
+                decision, num = auto_scaler_make_decision()
+                # based on the decision, start the action
+                if decision == constants.INCREASE_DECISION:
+                    manager.change_workers_num(True, num)
+                    print("INFO: add {} new workers to the pool".format(num))
+                elif decision == constants.DECREASE_DECISION:
+                    manager.change_workers_num(False, num)
+                    print("INFO: remove {} workers from the pool".format(num))
+                elif decision == constants.MAINTAIN_DECISION:
+                    print()
+                else:
+                    print("ERROR: unexpected auto-scaler decision {}".format(decision))
         except Exception as e:
             print(e)
         finally:
@@ -32,6 +47,25 @@ def start():
             time.sleep(constants.AUTO_SCALING_WAIT_SECONDS)
 
 
-# TODO: check the past two minutes average for all workers to determine
-def make_decision():
-    pass
+# all logs to determine the auto-scaler is here
+def auto_scaler_make_decision():
+    decision = constants.MAINTAIN_DECISION
+    # TODO: check the CPU average to determine the decision
+
+    # verify if the decision is valid
+    decision = manager.verify_decision(decision)
+    # determine the number of workers change allowed
+    num = determine_num_change(decision)
+
+    return decision, num
+
+
+# determine the num change based on the decision
+def determine_num_change(decision):
+    change_num = 0
+    num_running = sum([1 for state in manager.workers_map.values() if state == constants.RUNNING_STATE])
+    if decision == constants.INCREASE_DECISION:
+        change_num = max(1, int((constants.EXPAND_RATIO - 1) * num_running))
+    elif decision == constants.DECREASE_DECISION:
+        change_num = max(1, int((constants.SHRINK_RATIO - 1) * num_running))
+    return change_num
