@@ -14,6 +14,8 @@ then every time we do the auto-scaling check or refresh the page or manually cha
 we can first check the workers map and make sure it is running properly and update it
 """
 import time
+from datetime import datetime, timedelta
+from http import HTTPStatus
 
 from app import aws_helper, constants, manager
 
@@ -22,9 +24,6 @@ from app import aws_helper, constants, manager
 def start():
     while True:
         try:
-            # check for credentials, if not available, retrieve it
-            aws_helper.check_credentials_expire()
-
             # use lock when updating the shared workers map
             with manager.lock:
                 # update the number of workers in the pool history
@@ -41,7 +40,7 @@ def start():
                     manager.change_workers_num(False, num)
                     print("INFO: remove {} workers from the pool".format(num))
                 elif decision == constants.MAINTAIN_DECISION:
-                    print("INFO: no update in the worker pool")
+                    print("INFO: no auto-scaling change in the worker pool")
                 else:
                     print("ERROR: unexpected auto-scaler decision {}".format(decision))
         except Exception as e:
@@ -49,6 +48,8 @@ def start():
         finally:
             # execute every one minute
             time.sleep(constants.AUTO_SCALING_WAIT_SECONDS)
+            # check for credentials, if not available, retrieve it
+            aws_helper.check_credentials_expire()
 
 
 # all logs to determine the auto-scaler is here
@@ -56,8 +57,14 @@ def auto_scaler_make_decision():
     # re-check the status of the instances in workers pool to ensure they are updated
     manager.update_workers_status()
 
+    # check the CPU average to determine the decision
     decision = constants.MAINTAIN_DECISION
-    # TODO: check the CPU average to determine the decision
+    cpu_utilization_avg = get_cpu_utilization_average()
+    if cpu_utilization_avg != -1:
+        if cpu_utilization_avg >= constants.CPU_UTIL_GROW_THRESHOLD:
+            decision = constants.INCREASE_DECISION
+        elif cpu_utilization_avg <= constants.CPU_UTIL_SHRINK_THRESHOLD:
+            decision = constants.DECREASE_DECISION
 
     # verify if the decision is valid
     decision = manager.verify_decision(decision)
@@ -67,12 +74,52 @@ def auto_scaler_make_decision():
     return decision, num
 
 
+# compute cpu utilization average for past 2 minutes
+def get_cpu_utilization_average():
+    cloudwatch = aws_helper.session.client("cloudwatch")
+    cur_time = datetime.utcnow()
+    cpu_utils_list = list()
+    for instance_id in manager.workers_map:
+        response = cloudwatch.get_metric_statistics(
+            Namespace="AWS/EC2",
+            MetricName="CPUUtilization",
+            Dimensions=[
+                {
+                    "Name": "InstanceId",
+                    "Value": instance_id
+                },
+            ],
+            StartTime=cur_time - timedelta(seconds=120),
+            EndTime=cur_time,
+            Period=60,
+            Statistics=[
+                "Average",
+            ],
+            Unit="Percent"
+        )
+        if response.get("ResponseMetadata", dict()).get("HTTPStatusCode") == HTTPStatus.OK and len(
+                response.get("Datapoints")) > 0:
+            cpu_utilization_avg = sum([point["Average"] for point in response["Datapoints"]]) / 2
+            cpu_utils_list.append(cpu_utilization_avg)
+        else:
+            del manager.workers_map[instance_id]
+    return sum(cpu_utils_list) / len(cpu_utils_list) if cpu_utils_list else -1
+
+
 # determine the num change based on the decision
 def determine_num_change(decision):
     change_num = 0
     num_running = sum([1 for state in manager.workers_map.values() if state == constants.RUNNING_STATE])
+    num_starting = sum([1 for state in manager.workers_map.values() if state == constants.STARTING_STATE])
+    num_terminating = sum([1 for state in manager.workers_map.values() if state == constants.TERMINATING_STATE])
+
+    # determine the number of workers to increase/decrease, then check if there are some working on it now
+    # if some already pending, just do the remaining, also prevent grow/shrink too many times
     if decision == constants.INCREASE_DECISION:
         change_num = max(1, int((constants.EXPAND_RATIO - 1) * num_running))
+        change_num = max(0, change_num - num_starting)
     elif decision == constants.DECREASE_DECISION:
         change_num = max(1, int((constants.SHRINK_RATIO - 1) * num_running))
+        change_num = max(0, change_num - num_terminating)
+
     return change_num

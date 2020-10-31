@@ -78,7 +78,7 @@ def get_credentials():
         expires = dateutil.parser.parse(result["Expiration"])
         print("INFO: successfully retrieved new credentials, expires at {}".format(expires))
     else:
-        expires = datetime(2030, 1, 1)
+        expires = datetime(2030, 1, 1).replace(tzinfo=pytz.utc)
         session = boto3.Session()
 
 
