@@ -6,7 +6,7 @@ from threading import Lock
 
 from flask import Blueprint, render_template
 
-from app import constants
+from app import aws_helper, constants
 
 bp = Blueprint("manager", __name__, url_prefix="/")
 # shared by main thread and auto-scaler thread to prevent race condition
@@ -16,14 +16,21 @@ workers_num_history = [None] * 30
 
 
 # TODO: create a starting worker when app is started and maybe other initialization
+#   this should not require lock as we know this is running alone during app creation
 def app_initialization():
-    # change_workers_num(True, 1)
+    # retrieve credentials first
+    aws_helper.check_credentials_expire()
+    change_workers_num(True, 1)
     pass
 
 
 # TODO: main page, need to call separate helper methods here
 @bp.route("/")
 def display_main_page():
+    with lock:
+        # update the workers status before displaying
+        update_workers_status()
+
     return render_template("main.html")
 
 
@@ -75,3 +82,8 @@ def verify_decision(decision):
             or (decision == constants.DECREASE_DECISION and len(workers_map) == constants.MIN_WORKER_NUM):
         decision = constants.MAINTAIN_DECISION
     return decision
+
+
+# TODO: update workers status and deregister/register them to ELB if necessary
+def update_workers_status():
+    pass

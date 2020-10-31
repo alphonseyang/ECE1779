@@ -1,26 +1,30 @@
 """
-TODO: this should be a background thread that monitors the
-    ongoing workers using the CloudWatch API. When the monitored value
-    changes, based on our threshold, call the AWS Elastic Load Balancing
-    API to make change to add/remove workers
-    1. this should be a long-running thread, running with manager app
-    2. check the CPU utilization (CloudWatch) for each worker per minute
-    3. worker size is 1 to 8
-    4. every minute, check if the workers in the workers_map have changed, if so, update the workers_map
-        for the start->running worker, register them to the ELB as well
+this should be a background thread that monitors the
+ongoing workers using the CloudWatch API. When the monitored value
+changes, based on our threshold, call the manager module helper methods
+ to make change to add/remove workers
+1. this should be a long-running thread, running with manager app
+2. check the CPU utilization (CloudWatch) for each worker per minute
+3. worker size is 1 to 8
+4. every minute, check if the workers in the workers_map have changed, if so, update the workers_map
+    for the start->running worker
 
-    idea: start the EC2 first and record them in the workers_map with state,
-    then every time we do the auto-scaling check or refresh the page or manually change,
-    we can first check the workers map and make sure it is running properly and update it
+idea: start the EC2 first and record them in the workers_map with state,
+then every time we do the auto-scaling check or refresh the page or manually change,
+we can first check the workers map and make sure it is running properly and update it
 """
 import time
 
-from app import constants, manager
+from app import aws_helper, constants, manager
 
 
+# main auto-scaler background thread method
 def start():
     while True:
         try:
+            # check for credentials, if not available, retrieve it
+            aws_helper.check_credentials_expire()
+
             # use lock when updating the shared workers map
             with manager.lock:
                 # update the number of workers in the pool history
@@ -37,11 +41,11 @@ def start():
                     manager.change_workers_num(False, num)
                     print("INFO: remove {} workers from the pool".format(num))
                 elif decision == constants.MAINTAIN_DECISION:
-                    print()
+                    print("INFO: no update in the worker pool")
                 else:
                     print("ERROR: unexpected auto-scaler decision {}".format(decision))
         except Exception as e:
-            print(e)
+            print("ERROR: unexpected error {}".format(e))
         finally:
             # execute every one minute
             time.sleep(constants.AUTO_SCALING_WAIT_SECONDS)
@@ -49,6 +53,9 @@ def start():
 
 # all logs to determine the auto-scaler is here
 def auto_scaler_make_decision():
+    # re-check the status of the instances in workers pool to ensure they are updated
+    manager.update_workers_status()
+
     decision = constants.MAINTAIN_DECISION
     # TODO: check the CPU average to determine the decision
 

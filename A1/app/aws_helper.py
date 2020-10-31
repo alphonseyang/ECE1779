@@ -22,6 +22,9 @@ def collect_requests_count(instance_id):
     global session, requests_count
     while True:
         try:
+            # update credentials if necessary
+            check_credentials_expire()
+
             with lock:
                 current_timestamp = datetime.fromtimestamp((datetime.utcnow().timestamp() // 60 - 1) * 60)
                 cloudwatch = session.client("cloudwatch")
@@ -39,7 +42,6 @@ def collect_requests_count(instance_id):
                     Namespace='ECE1779/TRAFFIC'
                 )
                 print("INFO: the past one minute has {} requests, time {}".format(requests_count, current_timestamp))
-                check_credentials_expire()
                 requests_count = 0
         except Exception as e:
             # for error log purpose
