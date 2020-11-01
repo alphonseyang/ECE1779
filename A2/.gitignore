@@ -1,2 +1,6 @@
 .idea/
 logs/
+venv/bin
+app/__pycache__/*
+app/api/__pycache__/*
+venv/Lib
