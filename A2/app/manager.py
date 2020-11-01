@@ -4,7 +4,7 @@ TODO: all manager related functionality is here, this is designed to be place to
 """
 from threading import Lock
 
-from flask import Blueprint, flash, render_template, redirect, request, url_for
+from flask import Blueprint, render_template
 
 from app import aws_helper, constants
 
@@ -31,7 +31,7 @@ def display_main_page():
         # update the workers status before displaying
         update_workers_status()
 
-    return render_template("main.html", num_workers=len(workers_map))
+    return render_template("main.html")
 
 
 # TODO: query the AWS to show the number of worker over the past 30 minutes, or maybe use the auto-scaler to help you
@@ -48,38 +48,14 @@ def list_workers():
     pass
 
 
-# up/down button invoked method, first verify the decision then pass over to change_workers_num to finish
+# TODO: up/down button invoked method, first check the workers then pass over to change_workers_num to finish
 @bp.route("/change_workers", methods=["POST"])
 def change_workers():
-    if request.method == "POST":
-        with lock:
-            if request.form.get("upBtn"):
-                # make sure the decision is allowed
-                decision = verify_decision(constants.INCREASE_DECISION)
-                if decision != constants.INCREASE_DECISION:
-                    flash("At most {} workers, please try to remove worker first".format(constants.MAX_WORKER_NUM), constants.ERROR)
-                else:
-                    # add worker
-                    success = change_workers_num(True, 1)
-                    if success:
-                        flash("Successfully added a new worker to the pool", constants.INFO)
-                    else:
-                        flash("Failed to increase pool size, please try again later", constants.ERROR)
-            elif request.form.get('downBtn'):
-                # make sure the decision is allowed
-                decision = verify_decision(constants.DECREASE_DECISION)
-                if decision != constants.DECREASE_DECISION:
-                    flash("At least {} workers, please try to increase worker first".format(constants.MIN_WORKER_NUM), constants.ERROR)
-                else:
-                    # remove worker
-                    success = change_workers(False, 1)
-                    if success:
-                        flash("Successfully removed a new worker from the pool", constants.INFO)
-                    else:
-                        flash("Failed to decrease pool size, please try again later", constants.ERROR)
-            else:
-                flash("Invalid request to change worker pool size", constants.ERROR)
-    return redirect(url_for("manager.display_main_page"))
+    # get the decision from the post form
+    # use method verify_decision to ensure it is a valid decision
+    # invoke change_workers_num to finish the work
+    # notify if verify_decision return value is not the same as the passed in decision
+    pass
 
 
 # TODO: increase/decrease number of workers actual implementation
@@ -91,16 +67,13 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
 
 
 # TODO: shut down all workers and the current manager app (close everything but keep data)
-@bp.route("/terminate_manager", methods=["POST"])
 def terminate_manager():
-    flash("Successfully stopped the manager", constants.INFO)
+    pass
 
 
 # TODO: removed all application data including the images in S3 (not sure about the created users)
-@bp.route("/remove_app_data", methods=["POST"])
 def remove_app_data():
-    flash("Successfully deleted all application data", constants.INFO)
-    return redirect(url_for("manager.display_main_page"))
+    pass
 
 
 # verify if the decision is valid and output a final decision
