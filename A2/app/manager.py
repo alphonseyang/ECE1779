@@ -7,6 +7,7 @@ from threading import Lock
 from flask import Blueprint, flash, render_template, redirect, request, url_for
 
 from app import aws_helper, constants
+from app.constants import RUNNING_STATE
 
 bp = Blueprint("manager", __name__, url_prefix="/")
 # shared by main thread and auto-scaler thread to prevent race condition
@@ -44,8 +45,15 @@ def workers_chart():
 #   show the state of the instance (stopping and starting ones are considered working node)
 #   need lock to view workers_map, and update worker_map if necessary (if stop/start is done, help update workers_map)
 #   list the workers from the workers_map, not showing charts for pending state workers
+
 def list_workers():
-    pass
+    with lock:
+        update_workers_status()
+        for instance_id, state in workers_map:
+            if state == RUNNING_STATE:
+                show_cpu_utilization(instance_id)
+                show_http_request(instance_id)
+    return
 
 
 # up/down button invoked method, first verify the decision then pass over to change_workers_num to finish
@@ -114,3 +122,10 @@ def verify_decision(decision):
 # TODO: update workers status and deregister/register them to ELB if necessary
 def update_workers_status():
     pass
+
+def show_cpu_utilization(instance_id):
+    pass
+
+def show_http_request(instance_id):
+    pass
+
