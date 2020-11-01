@@ -7,7 +7,9 @@
 <section class="content">
     <header>
         {% block header %}
-
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand">ECE1779 Manager App</a>
+        </nav>
         {% endblock %}
     </header>
 
@@ -18,7 +20,98 @@
     {% endfor %}
 
     {% block content %}
+    <body>
+    <div class="container">
+        <div class="row">
+
+            <!--list workers-->
+            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+                <div class="card card-signin my-5">
+                    <br>
+                    <h3 class="card-title text-center">Workers list</h3>
+                    <div class="card-header text-center">Current size: {{ num_workers }}</div>
+                    <div class="card-body">
+                        <form class="form-signin" method="post" action="{{ '/show_charts' }}">
+                        <table class="table">
+                          <thead>
+                            <tr>
+                              <th scope="col">Instance ID</th>
+                              <th scope="col">State</th>
+                              <th scope="col">Performance/Request Charts</th>
+                            </tr>
+                          </thead>
+                            <tbody>
+                              {%for key,value in workers%}
+                               <tr>
+                                  <th scope="row">{{key}}</th>
+                                  <td>{{value}}</td>
+                                  <td><button type="button" class="btn btn-outline-info">charts</button></td>
+                                </tr>
+                              {%endfor%}
+                            </tbody>
+                        </table>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!--the buttons to control workers-->
+            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+                <div class="card card-signin my-5">
+                    <br>
+                    <h3 class="card-title text-center">Workers trend for past 30 mins</h3>
+                      <form class="md-form" method="post" enctype=multipart/form-data>
+                        <div class="file-field">
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!--the buttons to control workers-->
+            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+                <div class="card card-signin my-5">
+                    <br>
+                    <h3 class="card-title text-center">Change Pool Size</h3>
+                    <div class="card-header text-center">Current size: {{ num_workers }}</div>
+                    <div class="card-body">
+                        <form class="form-signin" method="post" action="{{ '/change_workers' }}">
+                            <div class="form-label-group text-center">
+                                <input class="btn btn-primary text-uppercase" type="submit" value="Up" name="upBtn">
+                                <input class="btn btn-primary text-uppercase" type="submit" value="Down"
+                                       name="downBtn">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!--the buttons to control manager app-->
+            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+                <div class="card card-signin my-5">
+                    <br>
+                    <h3 class="card-title text-center">Manager Features</h3>
+                    <div class="card-header text-center">Stop Manager</div>
+                    <div class="card-body">
+                        <form class="form-signin" method="post" action="{{ '/terminate_manager' }}">
+                            <div class="form-label-group text-center">
+                                <input class="btn btn-primary text-uppercase" type="submit" value="Stop">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-header text-center">Delete Application Data</div>
+                    <div class="card-body">
+                        <form class="form-signin" method="post" action="{{ '/remove_app_data' }}">
+                            <div class="form-label-group text-center">
+                                <input class="btn btn-primary text-uppercase" type="submit" value="Delete">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </body>
 
     {% endblock %}
-
 </section>
