@@ -28,7 +28,8 @@ def get_credentials():
         print("INFO: successfully retrieved new credentials, expires at {}".format(expires))
     else:
         expires = datetime(2030, 1, 1).replace(tzinfo=pytz.utc)
-        session = boto3.Session()
+        session = boto3.Session(region_name="us-east-1")
+
 
 
 # if the credentials expires, renew
