@@ -1,14 +1,30 @@
+from datetime import datetime, timedelta
+
+import numpy as np
+from flask import Blueprint, render_template
+
 from app import aws_helper
+from app.manager import lock
+
+bp = Blueprint("manager", __name__, url_prefix="/")
 
 
+# show the detailed information of the worker
+@bp.route("/<instance_id>")
 def get_worker_detail(instance_id):
-    pass
+    with lock:
+        min = np.arange(1, 31)
+        cpu_util = get_cpu_utilization(instance_id)
+        http_rate = get_http_request(instance_id)
+    return render_template("worker_detail.html", mins=min, cpu=cpu_util,
+                           time=min, rate=http_rate)
 
 
 # create a new worker by starting a EC2 instance, returns the instance_id
 def create_worker():
     ec2 = aws_helper.session.resource("ec2")
-    instance = ec2.create_instances(ImageId='ami-092e1ce5b6b7585ec', MinCount=1, MaxCount=1, SecurityGroupIds=['sg-09e21c9813da24aa1'], InstanceType='t2.medium')
+    instance = ec2.create_instances(ImageId='ami-092e1ce5b6b7585ec', MinCount=1, MaxCount=1,
+                                    SecurityGroupIds=['sg-09e21c9813da24aa1'], InstanceType='t2.medium')
     return instance[0].id
 
 
@@ -67,3 +83,50 @@ def start_worker(instance_id):
                 './venv/bin/gunicorn -w 4 "app:create_app()" -e FLASK_ENV=production -b 0.0.0.0:5000 --access-logfile logs/access.log --error-logfile logs/error.log'
             ]
         })
+
+
+def get_cpu_utilization(instance_id):
+    cloudwatch = aws_helper.session.client("cloudwatch")
+    cur_time = datetime.utcnow()
+    cpu_utils_list = list()
+    response = cloudwatch.get_metric_statistics(
+        Namespace="AWS/EC2",
+        MetricName="CPUUtilization",
+        Dimensions=[
+            {
+                "Name": "InstanceId",
+                "Value": instance_id
+            },
+        ],
+        StartTime=cur_time - timedelta(seconds=1800),
+        EndTime=cur_time,
+        Period=60,
+        Statistics=[
+            "Average",
+        ],
+        Unit="Percent"
+    )
+    return response["Datapoints"]["Average"]
+
+
+def get_http_request(instance_id):
+    cloudwatch = aws_helper.session.client("cloudwatch")
+    cur_time = datetime.utcnow()
+    response = cloudwatch.get_metric_statistics(
+        Namespace="ECE1779/TRAFFIC",
+        MetricName="Requests",
+        Dimensions=[
+            {
+                "Name": "InstanceId",
+                "Value": instance_id
+            },
+        ],
+        StartTime=cur_time - timedelta(seconds=1800),
+        EndTime=cur_time,
+        Period=60,
+        Statistics=[
+            "SampleCount"
+        ],
+        Unit="Count"
+    )
+    return response

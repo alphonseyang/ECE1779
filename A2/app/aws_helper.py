@@ -31,7 +31,6 @@ def get_credentials():
         session = boto3.Session(region_name="us-east-1")
 
 
-
 # if the credentials expires, renew
 def check_credentials_expire():
     global session
