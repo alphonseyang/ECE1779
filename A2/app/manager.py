@@ -7,8 +7,8 @@ from threading import Lock
 from flask import Blueprint, flash, render_template, redirect, request, url_for
 
 from app import aws_helper, constants
-from app.constants import RUNNING_STATE
 
+import numpy as np
 bp = Blueprint("manager", __name__, url_prefix="/")
 # shared by main thread and auto-scaler thread to prevent race condition
 lock = Lock()
@@ -31,14 +31,17 @@ def display_main_page():
     with lock:
         # update the workers status before displaying
         update_workers_status()
+        # workers_chart()
+        labels = np.arange(1, 31)
+        value = workers_num_history
+    return render_template("main.html", num_workers=len(workers_map), workers=workers_map, max=8,
+                           values=value, labels=labels)
 
-    return render_template("main.html", num_workers=len(workers_map))
 
-
-# TODO: query the AWS to show the number of worker over the past 30 minutes, or maybe use the auto-scaler to help you
+# use the auto-scaler keeps track of the number of the workers
 #   track (it runs every minute), depends on your design
 def workers_chart():
-    pass
+    return
 
 
 # TODO: list out the current workers with URLs and the DNS for AWS ELB
@@ -49,10 +52,6 @@ def workers_chart():
 def list_workers():
     with lock:
         update_workers_status()
-        for instance_id, state in workers_map:
-            if state == RUNNING_STATE:
-                show_cpu_utilization(instance_id)
-                show_http_request(instance_id)
     return
 
 
@@ -65,7 +64,8 @@ def change_workers():
                 # make sure the decision is allowed
                 decision = verify_decision(constants.INCREASE_DECISION)
                 if decision != constants.INCREASE_DECISION:
-                    flash("At most {} workers, please try to remove worker first".format(constants.MAX_WORKER_NUM), constants.ERROR)
+                    flash("At most {} workers, please try to remove worker first".format(constants.MAX_WORKER_NUM),
+                          constants.ERROR)
                 else:
                     # add worker
                     success = change_workers_num(True, 1)
@@ -77,7 +77,8 @@ def change_workers():
                 # make sure the decision is allowed
                 decision = verify_decision(constants.DECREASE_DECISION)
                 if decision != constants.DECREASE_DECISION:
-                    flash("At least {} workers, please try to increase worker first".format(constants.MIN_WORKER_NUM), constants.ERROR)
+                    flash("At least {} workers, please try to increase worker first".format(constants.MIN_WORKER_NUM),
+                          constants.ERROR)
                 else:
                     # remove worker
                     success = change_workers(False, 1)
@@ -121,11 +122,5 @@ def verify_decision(decision):
 
 # TODO: update workers status and deregister/register them to ELB if necessary
 def update_workers_status():
-    pass
-
-def show_cpu_utilization(instance_id):
-    pass
-
-def show_http_request(instance_id):
     pass
 

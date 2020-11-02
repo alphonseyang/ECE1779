@@ -24,49 +24,17 @@
     <div class="container">
         <div class="row">
 
-            <!--list workers-->
             <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
                 <div class="card card-signin my-5">
                     <br>
-                    <h3 class="card-title text-center">Workers list</h3>
-                    <div class="card-header text-center">Current size: {{ num_workers }}</div>
-                    <div class="card-body">
-                        <form class="form-signin" method="post" action="{{ '/show_charts' }}">
-                        <table class="table">
-                          <thead>
-                            <tr>
-                              <th scope="col">Instance ID</th>
-                              <th scope="col">State</th>
-                              <th scope="col">Performance/Request Charts</th>
-                            </tr>
-                          </thead>
-                            <tbody>
-                              {%for key,value in workers%}
-                               <tr>
-                                  <th scope="row">{{key}}</th>
-                                  <td>{{value}}</td>
-                                  <td> <a href="{{url_for('worker.get_worker_detail',instance_id=key)}}" class="nav-link">charts</a> </td>
-                                </tr>
-                              {%endfor%}
-                            </tbody>
-                        </table>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!--number of workers for 30 mins-->
-            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
-                <div class="card card-signin my-5">
-                    <br>
-                    <h3 class="card-title text-center">Workers trend for past 30 mins</h3>
+                    <h3 class="card-title text-center">Total CPU utilization</h3>
                      <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
                     <canvas id="chart" width="300" height="200"></canvas>
                         <script>
                           // bar chart data
                           var barData = {
                             labels : [
-                              {% for item in labels %}
+                              {% for item in mins %}
                                 "{{ item }}",
                               {% endfor %}
                             ],
@@ -80,7 +48,7 @@
                               pointHighlightStroke: "rgba(151,187,205,1)",
                               bezierCurve : false,
                               data : [
-                            {% for item in values %}
+                            {% for item in cpu %}
                                   {{ item }},
                                 {% endfor %}]
                               }
@@ -101,7 +69,7 @@
                           var mychart = document.getElementById("chart").getContext("2d");
 
                           steps = 10
-                          max = {{ max }}
+                          max = {{ max1 }}
                           // draw bar chart
                           var LineChartDemo = new Chart(mychart).Line(barData, {
                             scaleOverride: true,
@@ -117,49 +85,68 @@
                         </script>
                 </div>
             </div>
-
-            <!--the buttons to control workers-->
             <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
                 <div class="card card-signin my-5">
                     <br>
-                    <h3 class="card-title text-center">Change Pool Size</h3>
-                    <div class="card-header text-center">Current size: {{ num_workers }}</div>
-                    <div class="card-body">
-                        <form class="form-signin" method="post" action="{{ '/change_workers' }}">
-                            <div class="form-label-group text-center">
-                                <input class="btn btn-primary text-uppercase" type="submit" value="Up" name="upBtn">
-                                <input class="btn btn-primary text-uppercase" type="submit" value="Down"
-                                       name="downBtn">
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+                    <h3 class="card-title text-center">Rate of HTTP requests received for the past 30 mins</h3>
+                     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+                    <canvas id="chart2" width="300" height="200"></canvas>
+                        <script>
+                          // bar chart data
+                          var barData = {
+                            labels : [
+                              {% for item in time %}
+                                "{{ item }}",
+                              {% endfor %}
+                            ],
 
-            <!--the buttons to control manager app-->
-            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
-                <div class="card card-signin my-5">
-                    <br>
-                    <h3 class="card-title text-center">Manager Features</h3>
-                    <div class="card-header text-center">Stop Manager</div>
-                    <div class="card-body">
-                        <form class="form-signin" method="post" action="{{ '/terminate_manager' }}">
-                            <div class="form-label-group text-center">
-                                <input class="btn btn-primary text-uppercase" type="submit" value="Stop">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="card-header text-center">Delete Application Data</div>
-                    <div class="card-body">
-                        <form class="form-signin" method="post" action="{{ '/remove_app_data' }}">
-                            <div class="form-label-group text-center">
-                                <input class="btn btn-primary text-uppercase" type="submit" value="Delete">
-                            </div>
-                        </form>
-                    </div>
+                            datasets : [{
+                              fillColor: "rgba(151,187,205,0.2)",
+                              strokeColor: "rgba(151,187,205,1)",
+                              pointColor: "rgba(151,187,205,1)",
+                              pointStrokeColor: "#fff",
+                              pointHighlightFill: "#fff",
+                              pointHighlightStroke: "rgba(151,187,205,1)",
+                              bezierCurve : false,
+                              data : [
+                            {% for item in rate %}
+                                  {{ item }},
+                                {% endfor %}]
+                              }
+                        ]
+                          }
+
+                          Chart.defaults.global.animationSteps = 50;
+                          Chart.defaults.global.tooltipYPadding = 16;
+                          Chart.defaults.global.tooltipCornerRadius = 0;
+                          Chart.defaults.global.tooltipTitleFontStyle = "normal";
+                          Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
+                          Chart.defaults.global.animationEasing = "easeOutBounce";
+                          Chart.defaults.global.responsive = false;
+                          Chart.defaults.global.scaleLineColor = "black";
+                          Chart.defaults.global.scaleFontSize = 16;
+
+                          // get bar chart canvas
+                          var mychart = document.getElementById("chart").getContext("2d");
+
+                          steps = 10
+                          max = {{ max2 }}
+                          // draw bar chart
+                          var LineChartDemo = new Chart(mychart).Line(barData, {
+                            scaleOverride: true,
+                            scaleSteps: steps,
+                            scaleStepWidth: Math.ceil(max / steps),
+                            scaleStartValue: 0,
+                            scaleShowVerticalLines: true,
+                            scaleShowGridLines : true,
+                            barShowStroke : true,
+                            scaleShowLabels: true,
+                            bezierCurve: false,
+                          });
+                        </script>
                 </div>
             </div>
-        </div>
+          </div>
     </div>
     </body>
 
