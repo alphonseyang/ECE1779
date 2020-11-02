@@ -20,31 +20,51 @@
     {% endfor %}
 
     {% block content %}
-
     <body>
     <div class="container">
         <div class="row">
 
-            <!--the number of workers chart-->
+            <!--list workers-->
             <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
                 <div class="card card-signin my-5">
                     <br>
-                    <h3 class="card-title text-center">Delete User</h3>
+                    <h3 class="card-title text-center">Workers list</h3>
+                    <div class="card-header text-center">Current size: {{ num_workers }}</div>
                     <div class="card-body">
-                        <form class="form-signin" method="post" action="{{ '/user/delete' }}">
-                            <div class="form-label-group">
-                                <select name="username" id="delete_user" class="form-control">
-                                    {%for value in users%}
-                                    <option value={{value}}>{{value}}</option>
-                                    {%endfor%}
-                                </select>
-                                <br>
-                            </div>
-                            <div class="form-label-group text-center">
-                                <input class="btn btn-primary text-uppercase" type="submit" value="Delete">
-                            </div>
+                        <form class="form-signin" method="post" action="{{ '/show_charts' }}">
+                        <table class="table">
+                          <thead>
+                            <tr>
+                              <th scope="col">Instance ID</th>
+                              <th scope="col">State</th>
+                              <th scope="col">Performance/Request Charts</th>
+                            </tr>
+                          </thead>
+                            <tbody>
+                              {%for key,value in workers%}
+                               <tr>
+                                  <th scope="row">{{key}}</th>
+                                  <td>{{value}}</td>
+                                  <td><button type="button" class="btn btn-outline-info">charts</button></td>
+                                </tr>
+                              {%endfor%}
+                            </tbody>
+                        </table>
                         </form>
                     </div>
+                </div>
+            </div>
+
+            <!--the buttons to control workers-->
+            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+                <div class="card card-signin my-5">
+                    <br>
+                    <h3 class="card-title text-center">Workers trend for past 30 mins</h3>
+                      <form class="md-form" method="post" enctype=multipart/form-data>
+                        <div class="file-field">
+
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -61,35 +81,6 @@
                                 <input class="btn btn-primary text-uppercase" type="submit" value="Down"
                                        name="downBtn">
                             </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!--the list of workers-->
-            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
-                <div class="card card-signin my-5">
-                    <br>
-                    <h3 class="card-title text-center">Create New Account</h3>
-                    <div class="card-body">
-                        <form class="form-signin" method="post" action="{{ '/user/create'}}">
-                            <div class="form-label-group">
-                                <input type="text" id="username" class="form-control" placeholder="Username"
-                                       name="username"
-                                       required>
-                                <br>
-                            </div>
-
-                            <div class="form-label-group">
-                                <input type="password" id="password" class="form-control" placeholder="Password"
-                                       name="password"
-                                       required>
-                                <br>
-                            </div>
-                            <div class="form-label-group text-center">
-                                <input class="btn btn-primary text-uppercase" type="submit" value="Create"></input>
-                            </div>
-
                         </form>
                     </div>
                 </div>
@@ -122,7 +113,5 @@
     </div>
     </body>
 
-
     {% endblock %}
-
 </section>
