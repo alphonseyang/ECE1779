@@ -1,8 +1,9 @@
-from threading import Lock, Thread
+from threading import Thread
 
 from flask import Flask
 
 from app import auto_scaler, manager
+
 '''
 main app factory that creates the flask app
 '''

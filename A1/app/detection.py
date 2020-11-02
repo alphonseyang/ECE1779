@@ -133,10 +133,10 @@ def upload_file(file_data):
     try:
         # store the original file and do the detection
         open(original_path, "wb").write(file_data)
-        image = Image.open(original_path)
+        output_info = pytorch_infer.main(original_path, processed_path)
+        image = Image.open(processed_path)
         image.thumbnail((80, 80))
         image.save(thumbnail_path)
-        output_info = pytorch_infer.main(original_path, processed_path)
 
         # for easier switch between local dev and prod usage
         if constants.IS_REMOTE:
