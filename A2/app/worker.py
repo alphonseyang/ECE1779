@@ -6,6 +6,7 @@ from flask import Blueprint, render_template
 from app import aws_helper
 from app.manager import lock
 
+
 bp = Blueprint("manager", __name__, url_prefix="/")
 
 

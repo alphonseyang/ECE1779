@@ -6,9 +6,11 @@ from threading import Lock
 
 from flask import Blueprint, flash, render_template, redirect, request, url_for
 
-from app import aws_helper, constants
+from app import aws_helper, constants, worker
 
 import numpy as np
+
+
 bp = Blueprint("manager", __name__, url_prefix="/")
 # shared by main thread and auto-scaler thread to prevent race condition
 lock = Lock()
@@ -91,12 +93,46 @@ def change_workers():
     return redirect(url_for("manager.display_main_page"))
 
 
-# TODO: increase/decrease number of workers actual implementation
-#   Yang idea: this should only be called by a method that wrapped in a lock, and the check
+#   increase/decrease number of workers actual implementation
+#   this should only be called by a method that wrapped in a lock, and the check
 #   should be done before calling this method (caller should check in advance)
 #   update the workers_map, ELB targets
 def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
-    pass
+    with lock:
+        if len(workers_map) == constants.MAX_WORKER_NUM:
+            flash("At most {} workers, please try to remove worker first".format(constants.MAX_WORKER_NUM),
+                  constants.ERROR)
+            return False
+        elif is_increase:
+            if(len(workers_map) + changed_workers_num) > constants.MAX_WORKER_NUM:
+                flash("There are already {} workers exits, too many workers created".format(len(workers_map)),
+                      constants.ERROR)
+                return False
+            else:
+                for num in range(changed_workers_num):
+                    instanceid = worker.create_worker()
+                    workers_map[instanceid] = constants.STARTING_STATE
+        else:
+            if (len(workers_map) - changed_workers_num) < 1:
+                flash("Can not downsize worker size to 0 ", constants.ERROR)
+                return False
+            else:
+                stopping = 0
+                inslist = []
+                for ins,state in workers_map:
+                    if state == constants.STOPPING_STATE:
+                        stopping +=1
+                    else:
+                        inslist.append(ins)
+                if (len(workers_map) - changed_workers_num - stopping) < 1:
+                    flash("Can not downsize worker size to 0 ", constants.ERROR)
+                    return False
+                else:
+                    for num in range(changed_workers_num):
+                        workers_map[inslist[num]] = constants.STOPPING_STATE
+                        worker.destroy_worker(inslist[num])
+                        worker.deregister_worker(inslist[num])
+    return True
 
 
 # TODO: shut down all workers and the current manager app (close everything but keep data)
@@ -120,7 +156,19 @@ def verify_decision(decision):
     return decision
 
 
-# TODO: update workers status and deregister/register them to ELB if necessary
+# pull instance status from ec2 and update workers map status every 1 mins
+# start app/ register elb accordingly
 def update_workers_status():
-    pass
-
+    with lock:
+        ec2 = aws_helper.session.resource("ec2")
+        instances = ec2.instances.all()
+        for instance in instances:
+            if instance.id in workers_map:
+                if workers_map[instance.id] != instance.instance_type:
+                    if workers_map[instance.id] == constants.STARTING_STATE & instance.instance_type == constants.RUNNING_STATE:
+                        worker.start_worker(instance.id)
+                        worker.register_worker(instance.id)
+                        workers_map[instance.id] = constants.RUNNING_STATE
+                    if workers_map[instance.id] == constants.STOPPING_STATE & instance.instance_type == constants.TERMINATED_STATE:
+                        del workers_map[instance.id]
+    return

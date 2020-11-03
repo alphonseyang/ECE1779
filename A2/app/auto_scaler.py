@@ -111,7 +111,7 @@ def determine_num_change(decision):
     change_num = 0
     num_running = sum([1 for state in manager.workers_map.values() if state == constants.RUNNING_STATE])
     num_starting = sum([1 for state in manager.workers_map.values() if state == constants.STARTING_STATE])
-    num_terminating = sum([1 for state in manager.workers_map.values() if state == constants.TERMINATING_STATE])
+    num_terminating = sum([1 for state in manager.workers_map.values() if state == constants.STOPPING_STATE])
 
     # determine the number of workers to increase/decrease, then check if there are some working on it now
     # if some already pending, just do the remaining, also prevent grow/shrink too many times

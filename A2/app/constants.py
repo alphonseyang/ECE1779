@@ -17,8 +17,9 @@ CPU_UTIL_SHRINK_THRESHOLD = 10
 
 # constants related to the worker state
 RUNNING_STATE = "running"
-STARTING_STATE = "starting"
-TERMINATING_STATE = "terminating"
+STARTING_STATE = "pending"
+STOPPING_STATE = "stopping"
+TERMINATED_STATE = "terminated"
 
 # constants for AWS related
 ROLE_CREDENTIALS_URL = "http://169.254.169.254/latest/meta-data/iam/security-credentials/ECE1779YangWangKuang-WorkerRole"
