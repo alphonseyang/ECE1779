@@ -1,38 +1,20 @@
 from datetime import datetime, timedelta
 
-import numpy as np
-from flask import Blueprint, render_template
-
 from app import aws_helper
-from app.manager import lock
-
-
-bp = Blueprint("manager", __name__, url_prefix="/")
-
-
-# show the detailed information of the worker
-@bp.route("/<instance_id>")
-def get_worker_detail(instance_id):
-    with lock:
-        min = np.arange(1, 31)
-        cpu_util = get_cpu_utilization(instance_id)
-        http_rate = get_http_request(instance_id)
-    return render_template("worker_detail.html", mins=min, cpu=cpu_util,
-                           time=min, rate=http_rate)
 
 
 # create a new worker by starting a EC2 instance, returns the instance_id
-def create_worker():
-    ec2 = aws_helper.session.resource("ec2", region_name='us-east-1')
-    instance = ec2.create_instances(ImageId='ami-092e1ce5b6b7585ec', MinCount=1, MaxCount=1,
-                                    SecurityGroupIds=['sg-09e21c9813da24aa1'], InstanceType='t2.medium', LaunchTemplate={
-        'LaunchTemplateId': 'lt-032d46f563972b23d',
-        'Version': '2'
-    })
-    instance.wait_until_running()
-
-
-    return instance[0].id
+def create_worker(num):
+    ec2 = aws_helper.session.resource("ec2", region_name="us-east-1")
+    instances = ec2.create_instances(ImageId='ami-092e1ce5b6b7585ec', MinCount=num, MaxCount=num,
+                                     SecurityGroupIds=['sg-09e21c9813da24aa1'], InstanceType='t2.medium',
+                                     LaunchTemplate={
+                                         'LaunchTemplateId': 'lt-032d46f563972b23d',
+                                         'Version': '2'
+                                     })
+    # TODO: to be removed later
+    instances[0].wait_until_running()
+    return [instance.id for instance in instances]
 
 
 # destroy the worker (can be used by the terminate and change worker num) by stopping the worker EC2 instance
@@ -130,7 +112,7 @@ def get_http_request(instance_id):
         EndTime=cur_time,
         Period=60,
         Statistics=[
-            "SampleCount"
+            "Sum"
         ],
         Unit="Count"
     )

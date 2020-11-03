@@ -4,12 +4,10 @@ TODO: all manager related functionality is here, this is designed to be place to
 """
 from threading import Lock
 
+import numpy as np
 from flask import Blueprint, flash, render_template, redirect, request, url_for
 
 from app import aws_helper, constants, worker
-
-import numpy as np
-
 
 bp = Blueprint("manager", __name__, url_prefix="/")
 # shared by main thread and auto-scaler thread to prevent race condition
@@ -24,7 +22,6 @@ def app_initialization():
     # retrieve credentials first
     aws_helper.check_credentials_expire()
     change_workers_num(True, 1)
-    pass
 
 
 # TODO: main page, need to call separate helper methods here
@@ -38,6 +35,17 @@ def display_main_page():
         value = workers_num_history
     return render_template("main.html", num_workers=len(workers_map), workers=workers_map, max=8,
                            values=value, labels=labels)
+
+
+# show the detailed information of the worker
+@bp.route("/<instance_id>")
+def get_worker_detail(instance_id):
+    with lock:
+        min = np.arange(1, 31)
+        cpu_util = worker.get_cpu_utilization(instance_id)
+        http_rate = worker.get_http_request(instance_id)
+    return render_template("worker_detail.html", mins=min, cpu=cpu_util,
+                           time=min, rate=http_rate)
 
 
 # use the auto-scaler keeps track of the number of the workers
@@ -109,9 +117,9 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
                       constants.ERROR)
                 return False
             else:
-                for num in range(changed_workers_num):
-                    instanceid = worker.create_worker()
-                    workers_map[instanceid] = constants.STARTING_STATE
+                instance_ids = worker.create_worker(changed_workers_num)
+                for instance_id in instance_ids:
+                    workers_map[instance_id] = constants.STARTING_STATE
         else:
             if (len(workers_map) - changed_workers_num) < 1:
                 flash("Can not downsize worker size to 0 ", constants.ERROR)
@@ -119,9 +127,9 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
             else:
                 stopping = 0
                 inslist = []
-                for ins,state in workers_map:
+                for ins, state in workers_map:
                     if state == constants.STOPPING_STATE:
-                        stopping +=1
+                        stopping += 1
                     else:
                         inslist.append(ins)
                 if (len(workers_map) - changed_workers_num - stopping) < 1:
@@ -161,14 +169,17 @@ def verify_decision(decision):
 def update_workers_status():
     with lock:
         ec2 = aws_helper.session.resource("ec2")
+        # TODO: suggestion - only retrieve the instances based on the worker map (faster)
         instances = ec2.instances.all()
+        ids_set = set([instance.id for instance in instances])
+        # TODO: only loop through the instances in worker map, then check if the instance_id is in ids_set (to check if its still there)
         for instance in instances:
             if instance.id in workers_map:
                 if workers_map[instance.id] != instance.instance_type:
-                    if workers_map[instance.id] == constants.STARTING_STATE & instance.instance_type == constants.RUNNING_STATE:
+                    # TODO: instance_type is t2.medium, you need to get instance status
+                    if workers_map[instance.id] == constants.STARTING_STATE and instance.instance_type == constants.RUNNING_STATE:
                         worker.start_worker(instance.id)
                         worker.register_worker(instance.id)
                         workers_map[instance.id] = constants.RUNNING_STATE
-                    if workers_map[instance.id] == constants.STOPPING_STATE & instance.instance_type == constants.TERMINATED_STATE:
+                    if workers_map[instance.id] == constants.STOPPING_STATE and instance.instance_type == constants.TERMINATED_STATE:
                         del workers_map[instance.id]
-    return
