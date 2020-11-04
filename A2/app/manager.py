@@ -13,7 +13,6 @@ bp = Blueprint("manager", __name__, url_prefix="/")
 # shared by main thread and auto-scaler thread to prevent race condition
 lock = Lock()
 workers_map = dict()
-workers_num_history = [None] * 30
 
 
 # TODO: create a starting worker when app is started and maybe other initialization
@@ -32,9 +31,10 @@ def display_main_page():
         update_workers_status()
         # workers_chart()
         labels = np.arange(1, 31)
-        value = workers_num_history
+    # TODO: query AWS to get the count, HealthyHostCount from the ELB
+    values = [1] * 30
     return render_template("main.html", num_workers=len(workers_map), workers=workers_map, max=8,
-                           values=value, labels=labels)
+                           values=values, labels=labels)
 
 
 # show the detailed information of the worker

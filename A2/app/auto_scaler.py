@@ -27,8 +27,6 @@ def start():
             # use lock when updating the shared workers map
             with manager.lock:
                 # update the number of workers in the pool history
-                manager.workers_num_history.insert(0, len(manager.workers_map))
-                manager.workers_num_history.pop()
 
                 # auto-scaler algorithm to check for decision
                 decision, num = auto_scaler_make_decision()
