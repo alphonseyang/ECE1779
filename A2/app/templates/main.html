@@ -19,13 +19,12 @@
     </div>
     {% endfor %}
 
-    {% block content %}
     <body>
     <div class="container">
         <div class="row">
 
             <!--list workers-->
-            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+            <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
                 <div class="card card-signin my-5">
                     <br>
                     <h3 class="card-title text-center">Workers list</h3>
@@ -37,15 +36,17 @@
                             <tr>
                               <th scope="col">Instance ID</th>
                               <th scope="col">State</th>
-                              <th scope="col">Performance/Request Charts</th>
+                              <th scope="col">Details</th>
                             </tr>
                           </thead>
                             <tbody>
-                              {%for key,value in workers%}
+                              {%for worker in workers%}
                                <tr>
-                                  <th scope="row">{{key}}</th>
-                                  <td>{{value}}</td>
-                                  <td> <a href="{{url_for('worker.get_worker_detail',instance_id=key)}}" class="nav-link">charts</a> </td>
+                                  <td>{{worker}}</td>
+                                  <td>{{workers[worker]}}</td>
+                                  <td> <form action="{{url_for('manager.get_worker_detail',instance_id=key)}}" method="post">
+                                      <input type="submit" value="detailes">
+                                  </form> </td>
                                 </tr>
                               {%endfor%}
                             </tbody>
@@ -56,7 +57,7 @@
             </div>
 
             <!--number of workers for 30 mins-->
-            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+            <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
                 <div class="card card-signin my-5">
                     <br>
                     <h3 class="card-title text-center">Workers trend for past 30 mins</h3>
@@ -163,5 +164,4 @@
     </div>
     </body>
 
-    {% endblock %}
 </section>

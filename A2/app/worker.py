@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 
 from app import aws_helper
-
+import numpy as np
 
 # create a new worker by starting a EC2 instance, returns the instance_id
 def create_worker(num):
+    print("create worker, ", num)
     ec2 = aws_helper.session.resource("ec2", region_name="us-east-1")
     instances = ec2.create_instances(ImageId='ami-092e1ce5b6b7585ec', MinCount=num, MaxCount=num,
                                      SecurityGroupIds=['sg-09e21c9813da24aa1'], InstanceType='t2.medium',
@@ -13,7 +14,7 @@ def create_worker(num):
                                          'Version': '2'
                                      })
     # TODO: to be removed later
-    instances[0].wait_until_running()
+    # instances[0].wait_until_running()
     return [instance.id for instance in instances]
 
 
@@ -93,7 +94,9 @@ def get_cpu_utilization(instance_id):
         ],
         Unit="Percent"
     )
-    return response["Datapoints"]["Average"]
+    value = []
+    var = [value.append(temp["Average"] for temp in response["Datapoints"])]
+    return value
 
 
 def get_http_request(instance_id):
@@ -116,4 +119,7 @@ def get_http_request(instance_id):
         ],
         Unit="Count"
     )
-    return response
+    value = []
+    [value.append(temp["Sum"] for temp in response["Datapoints"])]
+    return value
+
