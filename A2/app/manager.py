@@ -1,6 +1,6 @@
 """
-TODO: all manager related functionality is here, this is designed to be place to host
-    all manager functionality, the tasks dispatched by main module will enter here、
+all manager related functionality is here, this is designed to be place to host
+all manager functionality, the tasks dispatched by main module will enter here、
 """
 from threading import Lock
 
@@ -15,15 +15,15 @@ lock = Lock()
 workers_map = dict()
 
 
-# TODO: create a starting worker when app is started and maybe other initialization
-#   this should not require lock as we know this is running alone during app creation
+# create a starting worker when app is started and maybe other initialization
+# this should not require lock as we know this is running alone during app creation
 def app_initialization():
     # retrieve credentials first
     aws_helper.check_credentials_expire()
     change_workers_num(True, 1)
 
 
-# TODO: main page, need to call separate helper methods here
+# main page, need to call separate helper methods here
 @bp.route("/")
 def display_main_page():
     with lock:
@@ -53,11 +53,6 @@ def get_worker_detail(instance_id):
 def workers_chart():
     return
 
-
-# TODO: list out the current workers with URLs and the DNS for AWS ELB
-#   show the state of the instance (stopping and starting ones are considered working node)
-#   need lock to view workers_map, and update worker_map if necessary (if stop/start is done, help update workers_map)
-#   list the workers from the workers_map, not showing charts for pending state workers
 
 def list_workers():
     with lock:
