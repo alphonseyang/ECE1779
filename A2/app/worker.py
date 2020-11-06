@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from app import aws_helper
-import numpy as np
+
 
 # create a new worker by starting a EC2 instance, returns the instance_id
 def create_worker(num):

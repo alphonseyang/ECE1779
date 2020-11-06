@@ -2,11 +2,12 @@
 all manager related functionality is here, this is designed to be place to host
 all manager functionality, the tasks dispatched by main module will enter here、
 """
-from threading import Lock
 from datetime import datetime, timedelta
+from threading import Lock
+
 from flask import Blueprint, flash, render_template, redirect, request, url_for
+
 from app import aws_helper, constants, worker
-import numpy as np
 
 bp = Blueprint("manager", __name__, url_prefix="/")
 # shared by main thread and auto-scaler thread to prevent race condition
@@ -32,7 +33,7 @@ def display_main_page():
         # workers_chart()
         labels = range(1, 31)
         values = get_num_worker()
-        if len(values)==0:
+        if len(values) == 0:
             values = [0] * 30
         print(workers_map)
     return render_template("main.html", num_workers=len(workers_map), workers=workers_map, max=8,
@@ -65,85 +66,90 @@ def list_workers():
 # up/down button invoked method, first verify the decision then pass over to change_workers_num to finish
 @bp.route("/change_workers", methods=["POST"])
 def change_workers():
-    if request.method == "POST":
-        if request.form.get("upBtn"):
+    with lock:
+        if request.method == "POST":
+            if request.form.get("upBtn"):
                 # make sure the decision is allowed
-            decision = verify_decision(constants.INCREASE_DECISION)
-            if decision != constants.INCREASE_DECISION:
-                flash("At most {} workers, please try to remove worker first".format(constants.MAX_WORKER_NUM),
-                        constants.ERROR)
-            else:
+                decision = verify_decision(constants.INCREASE_DECISION)
+                if decision != constants.INCREASE_DECISION:
+                    flash("At most {} workers, please try to remove worker first".format(constants.MAX_WORKER_NUM),
+                          constants.ERROR)
+                else:
                     # add worker
-                success = change_workers_num(True, 1)
-                if success:
-                    flash("Successfully added a new worker to the pool", constants.INFO)
-                else:
-                    flash("Failed to increase pool size, please try again later", constants.ERROR)
-        elif request.form.get('downBtn'):
+                    success = change_workers_num(True, 1)
+                    if success:
+                        flash("Successfully added a new worker to the pool", constants.INFO)
+                    else:
+                        flash("Failed to increase pool size, please try again later", constants.ERROR)
+            elif request.form.get('downBtn'):
                 # make sure the decision is allowed
-            decision = verify_decision(constants.DECREASE_DECISION)
-            if decision != constants.DECREASE_DECISION:
-                flash("At least {} workers, please try to increase worker first".format(constants.MIN_WORKER_NUM),
-                        constants.ERROR)
-            else:
-                    # remove worker
-                success = change_workers(False, 1)
-                if success:
-                    flash("Successfully removed a new worker from the pool", constants.INFO)
+                decision = verify_decision(constants.DECREASE_DECISION)
+                if decision != constants.DECREASE_DECISION:
+                    flash("At least {} workers, please try to increase worker first".format(constants.MIN_WORKER_NUM),
+                          constants.ERROR)
                 else:
-                    flash("Failed to decrease pool size, please try again later", constants.ERROR)
-        else:
-            flash("Invalid request to change worker pool size", constants.ERROR)
+                    # remove worker
+                    success = change_workers(False, 1)
+                    if success:
+                        flash("Successfully removed a new worker from the pool", constants.INFO)
+                    else:
+                        flash("Failed to decrease pool size, please try again later", constants.ERROR)
+            else:
+                flash("Invalid request to change worker pool size", constants.ERROR)
     return redirect(url_for("manager.display_main_page"))
 
 
 #   increase/decrease number of workers actual implementation
-#   this should only be called by a method that wrapped in a lock, and the check
-#   should be done before calling this method (caller should check in advance)
-#   update the workers_map, ELB targets
 def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
-    with lock:
-        if len(workers_map) == constants.MAX_WORKER_NUM:
-            flash("At most {} workers, please try to remove worker first".format(constants.MAX_WORKER_NUM),
+    if len(workers_map) == constants.MAX_WORKER_NUM:
+        flash("At most {} workers, please try to remove worker first".format(constants.MAX_WORKER_NUM),
+              constants.ERROR)
+        return False
+    elif is_increase:
+        if (len(workers_map) + changed_workers_num) > constants.MAX_WORKER_NUM:
+            flash("There are already {} workers exits, too many workers created".format(len(workers_map)),
                   constants.ERROR)
             return False
-        elif is_increase:
-            if(len(workers_map) + changed_workers_num) > constants.MAX_WORKER_NUM:
-                flash("There are already {} workers exits, too many workers created".format(len(workers_map)),
-                      constants.ERROR)
-                return False
-            else:
-                instance_ids = worker.create_worker(changed_workers_num)
-                for instance_id in instance_ids:
-                    workers_map[instance_id] = constants.STARTING_STATE
-                    print(instance_id)
-                    return True
         else:
-            if (len(workers_map) - changed_workers_num) < 1:
+            instance_ids = worker.create_worker(changed_workers_num)
+            for instance_id in instance_ids:
+                workers_map[instance_id] = constants.STARTING_STATE
+                print(instance_id)
+                return True
+    else:
+        if (len(workers_map) - changed_workers_num) < 1:
+            flash("Can not downsize worker size to 0 ", constants.ERROR)
+            return False
+        else:
+            stopping = 0
+            inslist = []
+            for ins, state in workers_map:
+                if state == constants.STOPPING_STATE:
+                    stopping += 1
+                else:
+                    inslist.append(ins)
+            if (len(workers_map) - changed_workers_num - stopping) < 1:
                 flash("Can not downsize worker size to 0 ", constants.ERROR)
                 return False
             else:
-                stopping = 0
-                inslist = []
-                for ins, state in workers_map:
-                    if state == constants.STOPPING_STATE:
-                        stopping += 1
-                    else:
-                        inslist.append(ins)
-                if (len(workers_map) - changed_workers_num - stopping) < 1:
-                    flash("Can not downsize worker size to 0 ", constants.ERROR)
-                    return False
-                else:
-                    for num in range(changed_workers_num):
-                        workers_map[inslist[num]] = constants.STOPPING_STATE
-                        worker.destroy_worker(inslist[num])
-                        worker.deregister_worker(inslist[num])
+                for num in range(changed_workers_num):
+                    workers_map[inslist[num]] = constants.STOPPING_STATE
+                    worker.deregister_worker(inslist[num])
+                    worker.destroy_worker(inslist[num])
     return True
 
 
-# TODO: shut down all workers and the current manager app (close everything but keep data)
+# shut down all workers and the current manager app (close everything but keep data)
 @bp.route("/terminate_manager", methods=["POST"])
 def terminate_manager():
+    with lock:
+        for instance_id, status in workers_map.items():
+            if status == constants.RUNNING_STATE:
+                worker.deregister_worker(instance_id)
+                worker.destroy_worker(instance_id)
+            elif status == constants.STARTING_STATE:
+                worker.destroy_worker(instance_id)
+
     flash("Successfully stopped the manager", constants.INFO)
 
 
