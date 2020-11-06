@@ -48,7 +48,7 @@
                                       <input type="submit" value="details">
                                   </form> </td>
                                    {%else%}
-                                   <td>details</td>
+                                   <td>N/A</td>
                                    {%endif%}
                                 </tr>
                               {%endfor%}
@@ -63,9 +63,9 @@
                 <div class="card card-signin my-5">
                     <br>
                     <h3 class="card-title text-center">Workers trend for past 30 mins</h3>
-                     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+                    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
                     <canvas id="chart" width="300" height="200"></canvas>
-                        <script>
+                    <script>
                           // bar chart data
                           var barData = {
                             labels : [
@@ -117,7 +117,7 @@
                             scaleShowLabels: true,
                             bezierCurve: false,
                           });
-                        </script>
+                    </script>
                 </div>
             </div>
 

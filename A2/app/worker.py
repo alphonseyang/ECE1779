@@ -6,6 +6,7 @@ from app import aws_helper
 # create a new worker by starting a EC2 instance, returns the instance_id
 def create_worker(num):
     print("create worker, ", num)
+    tag = {"Key": "Name", "Value": "Yang"}
     ec2 = aws_helper.session.resource("ec2", region_name="us-east-1")
     instances = ec2.create_instances(ImageId='ami-092e1ce5b6b7585ec', MinCount=num, MaxCount=num,
                                      SecurityGroupIds=['sg-09e21c9813da24aa1'], InstanceType='t2.medium',
@@ -13,6 +14,8 @@ def create_worker(num):
                                          'LaunchTemplateId': 'lt-032d46f563972b23d',
                                          'Version': '2'
                                      })
+                        #              TagSpecifications=[{'ResourceType': 'instance',
+                        # 'Tags': [tag]}])
     # TODO: to be removed later
     # instances[0].wait_until_running()
     return [instance.id for instance in instances]
@@ -121,8 +124,11 @@ def get_http_request(instance_id):
         ],
         Unit="Count"
     )
+
     value = []
     for temp in response["Datapoints"]:
         value.append(temp["Sum"])
+
     return value
+
 

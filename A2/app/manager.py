@@ -2,6 +2,7 @@
 all manager related functionality is here, this is designed to be place to host
 all manager functionality, the tasks dispatched by main module will enter here、
 """
+import sys
 from datetime import datetime, timedelta
 from threading import Lock
 from typing import List, Any
@@ -36,7 +37,7 @@ def display_main_page():
         values = get_num_worker()
         if len(values) == 0:
             values = [0] * 30
-        print(workers_map)
+        print("Current workers: {}".format(workers_map))
     return render_template("main.html", num_workers=len(workers_map), workers=workers_map, max=8,
                            values=values, labels=labels)
 
@@ -59,25 +60,13 @@ def get_worker_detail(instance_id):
                            time=min, rate=http_rate)
 
 
-# use the auto-scaler keeps track of the number of the workers
-#   track (it runs every minute), depends on your design
-def workers_chart():
-    return
-
-
-def list_workers():
-    with lock:
-        update_workers_status()
-    return
-
-
 # up/down button invoked method, first verify the decision then pass over to change_workers_num to finish
 @bp.route("/change_workers", methods=["POST"])
 def change_workers():
     with lock:
         if request.method == "POST":
             if request.form.get("upBtn"):
-                print("up")
+                print("Add worker")
                 # make sure the decision is allowed
                 decision = verify_decision(constants.INCREASE_DECISION)
                 if decision != constants.INCREASE_DECISION:
@@ -91,7 +80,7 @@ def change_workers():
                     else:
                         flash("Failed to increase pool size, please try again later", constants.ERROR)
             elif request.form.get('downBtn'):
-                print("down")
+                print("Remove worker")
                 # make sure the decision is allowed
                 decision = verify_decision(constants.DECREASE_DECISION)
                 if decision != constants.DECREASE_DECISION:
@@ -152,6 +141,20 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
 # shut down all workers and the current manager app (close everything but keep data)
 @bp.route("/terminate_manager", methods=["POST"])
 def terminate_manager():
+    if constants.IS_REMOTE:
+        clean_all_workers()
+        sys.exit(4)
+    else:
+        shutdown = request.environ.get("werkzeug.server.shutdown")
+        if not shutdown:
+            flash("Failed to terminate manager app", constants.ERROR)
+            return
+        clean_all_workers()
+        shutdown()
+
+
+# helper method to clear all workers when invoked by the terminate_manager method
+def clean_all_workers():
     with lock:
         for instance_id, status in workers_map.items():
             if status == constants.RUNNING_STATE:
@@ -180,7 +183,7 @@ def verify_decision(decision):
 # start app/ register elb accordingly
 def update_workers_status():
     ec2 = aws_helper.session.resource("ec2")
-        # TODO: suggestion - only retrieve the instances based on the worker map (faster)
+    # TODO: suggestion - only retrieve the instances based on the worker map (faster)
     instances = ec2.instances.all()
     ids_set = set([instance.id for instance in instances])
     terminate_worker = []
