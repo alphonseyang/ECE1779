@@ -5,11 +5,10 @@ all manager functionality, the tasks dispatched by main module will enter hereã€
 import sys
 from datetime import datetime, timedelta
 from threading import Lock
-from typing import List, Any
 
 from flask import Blueprint, flash, render_template, redirect, request, url_for
 
-from app import aws_helper, constants, worker
+from app import aws_helper, constants, database, worker
 
 bp = Blueprint("manager", __name__, url_prefix="/")
 # shared by main thread and auto-scaler thread to prevent race condition
@@ -38,26 +37,26 @@ def display_main_page():
         if len(values) == 0:
             values = [0] * 30
         print("Current workers: {}".format(workers_map))
+    dns_name = get_load_balancer_dns()
     return render_template("main.html", num_workers=len(workers_map), workers=workers_map, max=8,
-                           values=values, labels=labels)
+                           values=values, labels=labels, dns_name=dns_name)
 
 
 # show the detailed information of the worker
 @bp.route("/<instance_id>", methods=["POST"])
 def get_worker_detail(instance_id):
     with lock:
-        min = range(1, 31)
+        minutes = range(1, 31)
         max1 = 100
         cpu_util = worker.get_cpu_utilization(instance_id)
         http_rate = worker.get_http_request(instance_id)
         if len(cpu_util) == 0:
-            cpu_util=[0] * 30
+            cpu_util = [0] * 30
         if len(http_rate) == 0:
-            http_rate=[0] *30
+            http_rate = [0] * 30
         max2 = max(http_rate)+1
 
-    return render_template("worker_detail.html", mins=min, cpu=cpu_util, max1=max1, max2=max2,
-                           time=min, rate=http_rate)
+    return render_template("worker_detail.html", cpu=cpu_util, max1=max1, max2=max2, time=minutes, rate=http_rate)
 
 
 # up/down button invoked method, first verify the decision then pass over to change_workers_num to finish
@@ -151,6 +150,7 @@ def terminate_manager():
             return
         clean_all_workers()
         shutdown()
+    return redirect(url_for("manager.display_main_page"))
 
 
 # helper method to clear all workers when invoked by the terminate_manager method
@@ -164,10 +164,27 @@ def clean_all_workers():
                 worker.destroy_worker(instance_id)
 
 
-# TODO: removed all application data including the images in S3 (not sure about the created users)
+# removed all application data including the images in S3 (not sure about the created users)
 @bp.route("/remove_app_data", methods=["POST"])
 def remove_app_data():
-    flash("Successfully deleted all application data", constants.INFO)
+    try:
+        s3 = aws_helper.session.resource('s3')
+        bucket = s3.Bucket(constants.BUCKET_NAME)
+        bucket.objects.all().delete()
+        db_conn = database.get_conn()
+        cursor = db_conn.cursor()
+        sql_script = open("app/static/schema.sql")
+        sql_commands = sql_script.read().split(";")
+        for command in sql_commands:
+            command = command.replace("\n", "")
+            if command:
+                cursor.execute(command)
+        db_conn.commit()
+        db_conn.close()
+    except Exception as e:
+        flash("Failed to remove application data, please try again", constants.ERROR)
+    else:
+        flash("Successfully removed application data", constants.INFO)
     return redirect(url_for("manager.display_main_page"))
 
 
@@ -183,12 +200,9 @@ def verify_decision(decision):
 # start app/ register elb accordingly
 def update_workers_status():
     ec2 = aws_helper.session.resource("ec2")
-    # TODO: suggestion - only retrieve the instances based on the worker map (faster)
     instances = ec2.instances.all()
-    ids_set = set([instance.id for instance in instances])
     terminate_worker = []
     start_worker = []
-    # TODO: only loop through the instances in worker map, then check if the instance_id is in ids_set (to check if its still there)
     for instance in instances:
         if instance.id in workers_map:
             if workers_map[instance.id] != instance.state['Name']:
@@ -198,13 +212,14 @@ def update_workers_status():
                     terminate_worker.append(instance.id)
 
     for ins in start_worker:
-        #worker.start_worker(ins)
-        #worker.register_worker(ins)
+        # worker.start_worker(ins)
+        # worker.register_worker(ins)
         workers_map[ins] = constants.RUNNING_STATE
     for ins in terminate_worker:
         del workers_map[ins]
 
 
+# get the number of workers based on the ELB healthy host count
 def get_num_worker():
     cloudwatch = aws_helper.session.client("cloudwatch")
     cur_time = datetime.utcnow()
@@ -228,3 +243,11 @@ def get_num_worker():
     for temp in response["Datapoints"]:
         value.append(temp["Average"])
     return value
+
+
+# get the DNS name for display
+def get_load_balancer_dns():
+    elb = aws_helper.session.client("elbv2")
+    response = elb.describe_load_balancers(LoadBalancerArns=[constants.LOAD_BALANCER_ARN])
+    dns_name = response["LoadBalancers"][0]["DNSName"]
+    return dns_name
