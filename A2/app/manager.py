@@ -4,6 +4,7 @@ all manager functionality, the tasks dispatched by main module will enter hereã€
 """
 from datetime import datetime, timedelta
 from threading import Lock
+from typing import List, Any
 
 from flask import Blueprint, flash, render_template, redirect, request, url_for
 
@@ -175,17 +176,23 @@ def update_workers_status():
         # TODO: suggestion - only retrieve the instances based on the worker map (faster)
     instances = ec2.instances.all()
     ids_set = set([instance.id for instance in instances])
+    terminate_worker = []
+    start_worker = []
     # TODO: only loop through the instances in worker map, then check if the instance_id is in ids_set (to check if its still there)
     for instance in instances:
         if instance.id in workers_map:
-            if workers_map[instance.id] != instance.instance_type:
-                # TODO: instance_type is t2.medium, you need to get instance status
-                if workers_map[instance.id] == constants.STARTING_STATE and instance.instance_type == constants.RUNNING_STATE:
-                    worker.start_worker(instance.id)
-                    worker.register_worker(instance.id)
-                    workers_map[instance.id] = constants.RUNNING_STATE
-                if workers_map[instance.id] == constants.STOPPING_STATE and instance.instance_type == constants.TERMINATED_STATE:
-                    del workers_map[instance.id]
+            if workers_map[instance.id] != instance.state['Name']:
+                if workers_map[instance.id] == constants.STARTING_STATE and instance.state['Name'] == constants.RUNNING_STATE:
+                    start_worker.append(instance.id)
+                if workers_map[instance.id] == constants.STOPPING_STATE and instance.state['Name'] == constants.TERMINATED_STATE:
+                    terminate_worker.append(instance.id)
+
+    for ins in start_worker:
+        worker.start_worker(ins)
+        worker.register_worker(ins)
+        workers_map[ins] = constants.RUNNING_STATE
+    for ins in terminate_worker:
+        del workers_map[ins]
 
 
 def get_num_worker():
