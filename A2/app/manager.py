@@ -22,7 +22,7 @@ def app_initialization():
     # retrieve credentials first
     aws_helper.check_credentials_expire()
     change_workers_num(True, 1)
-    print("app init")
+    print("app initialized successfully")
 
 
 # main page, need to call separate helper methods here
@@ -115,7 +115,7 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
             instance_ids = worker.create_worker(changed_workers_num)
             for instance_id in instance_ids:
                 workers_map[instance_id] = constants.STARTING_STATE
-                print(instance_id)
+                print("Successfully created new worker with id {}".format(instance_id))
                 return True
     else:
         if (len(workers_map) - changed_workers_num) < 1:
@@ -150,8 +150,6 @@ def terminate_manager():
                 worker.destroy_worker(instance_id)
             elif status == constants.STARTING_STATE:
                 worker.destroy_worker(instance_id)
-
-    flash("Successfully stopped the manager", constants.INFO)
 
 
 # TODO: removed all application data including the images in S3 (not sure about the created users)

@@ -95,12 +95,11 @@ def get_cpu_utilization_average():
             ],
             Unit="Percent"
         )
-        if response.get("ResponseMetadata", dict()).get("HTTPStatusCode") == HTTPStatus.OK and len(
-                response.get("Datapoints")) > 0:
+        if response.get("ResponseMetadata", dict()).get("HTTPStatusCode") == HTTPStatus.OK and len(response.get("Datapoints")) > 0:
             cpu_utilization_avg = sum([point["Average"] for point in response["Datapoints"]]) / 2
             cpu_utils_list.append(cpu_utilization_avg)
-        else:
-            del manager.workers_map[instance_id]
+        elif manager.workers_map[instance_id] == constants.STARTING_STATE:
+            cpu_utils_list.append(0)
     return sum(cpu_utils_list) / len(cpu_utils_list) if cpu_utils_list else -1
 
 
