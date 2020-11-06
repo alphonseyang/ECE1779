@@ -5,6 +5,7 @@ all manager functionality, the tasks dispatched by main module will enter hereã€
 import sys
 from datetime import datetime, timedelta
 from threading import Lock
+from typing import List, Any
 
 from flask import Blueprint, flash, render_template, redirect, request, url_for
 
@@ -70,6 +71,7 @@ def change_workers():
     with lock:
         if request.method == "POST":
             if request.form.get("upBtn"):
+                print("Add worker")
                 # make sure the decision is allowed
                 decision = verify_decision(constants.INCREASE_DECISION)
                 if decision != constants.INCREASE_DECISION:
@@ -83,6 +85,7 @@ def change_workers():
                     else:
                         flash("Failed to increase pool size, please try again later", constants.ERROR)
             elif request.form.get('downBtn'):
+                print("Remove worker")
                 # make sure the decision is allowed
                 decision = verify_decision(constants.DECREASE_DECISION)
                 if decision != constants.DECREASE_DECISION:
@@ -124,11 +127,11 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
         else:
             stopping = 0
             inslist = []
-            for ins, state in workers_map.items():
-                if state == constants.STOPPING_STATE:
+            for instance_id, status in workers_map.items():
+                if status == constants.STOPPING_STATE:
                     stopping += 1
                 else:
-                    inslist.append(ins)
+                    inslist.append(instance_id)
             if (len(workers_map) - changed_workers_num - stopping) < 1:
                 flash("Can not downsize worker size to 0 ", constants.ERROR)
                 return False
@@ -185,20 +188,26 @@ def verify_decision(decision):
 # start app/ register elb accordingly
 def update_workers_status():
     ec2 = aws_helper.session.resource("ec2")
-        # TODO: suggestion - only retrieve the instances based on the worker map (faster)
+    # TODO: suggestion - only retrieve the instances based on the worker map (faster)
     instances = ec2.instances.all()
     ids_set = set([instance.id for instance in instances])
+    terminate_worker = []
+    start_worker = []
     # TODO: only loop through the instances in worker map, then check if the instance_id is in ids_set (to check if its still there)
     for instance in instances:
         if instance.id in workers_map:
-            if workers_map[instance.id] != instance.instance_type:
-                # TODO: instance_type is t2.medium, you need to get instance status
-                if workers_map[instance.id] == constants.STARTING_STATE and instance.instance_type == constants.RUNNING_STATE:
-                    worker.start_worker(instance.id)
-                    worker.register_worker(instance.id)
-                    workers_map[instance.id] = constants.RUNNING_STATE
-                if workers_map[instance.id] == constants.STOPPING_STATE and instance.instance_type == constants.TERMINATED_STATE:
-                    del workers_map[instance.id]
+            if workers_map[instance.id] != instance.state['Name']:
+                if workers_map[instance.id] == constants.STARTING_STATE and instance.state['Name'] == constants.RUNNING_STATE:
+                    start_worker.append(instance.id)
+                if workers_map[instance.id] == constants.STOPPING_STATE and instance.state['Name'] == constants.TERMINATED_STATE:
+                    terminate_worker.append(instance.id)
+
+    for ins in start_worker:
+        #worker.start_worker(ins)
+        #worker.register_worker(ins)
+        workers_map[ins] = constants.RUNNING_STATE
+    for ins in terminate_worker:
+        del workers_map[ins]
 
 
 def get_num_worker():
