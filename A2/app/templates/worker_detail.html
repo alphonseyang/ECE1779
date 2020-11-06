@@ -20,6 +20,7 @@
     {% endfor %}
 
     {% block content %}
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
     <body>
     <div class="container">
         <div class="row">
@@ -28,11 +29,11 @@
                 <div class="card card-signin my-5">
                     <br>
                     <h3 class="card-title text-center">Total CPU utilization</h3>
-                     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+
                     <canvas id="chart" width="300" height="200"></canvas>
                         <script>
                           // bar chart data
-                          var barData = {
+                          var barData1 = {
                             labels : [
                               {% for item in mins %}
                                 "{{ item }}",
@@ -52,29 +53,21 @@
                                   {{ item }},
                                 {% endfor %}]
                               }
-                        ]
+                            ]
                           }
 
-                          Chart.defaults.global.animationSteps = 50;
-                          Chart.defaults.global.tooltipYPadding = 16;
-                          Chart.defaults.global.tooltipCornerRadius = 0;
-                          Chart.defaults.global.tooltipTitleFontStyle = "normal";
-                          Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
-                          Chart.defaults.global.animationEasing = "easeOutBounce";
-                          Chart.defaults.global.responsive = false;
-                          Chart.defaults.global.scaleLineColor = "black";
-                          Chart.defaults.global.scaleFontSize = 16;
+
 
                           // get bar chart canvas
-                          var mychart = document.getElementById("chart").getContext("2d");
+                          var mychart1 = document.getElementById("chart").getContext("2d");
 
                           steps = 10
-                          max = {{ max1 }}
+                          max1 = {{ max1 }}
                           // draw bar chart
-                          var LineChartDemo = new Chart(mychart).Line(barData, {
+                          var LineChartDemo1 = new Chart(mychart1).Line(barData1, {
                             scaleOverride: true,
                             scaleSteps: steps,
-                            scaleStepWidth: Math.ceil(max / steps),
+                            scaleStepWidth: Math.ceil(max1 / steps),
                             scaleStartValue: 0,
                             scaleShowVerticalLines: true,
                             scaleShowGridLines : true,
@@ -89,11 +82,11 @@
                 <div class="card card-signin my-5">
                     <br>
                     <h3 class="card-title text-center">Rate of HTTP requests received for the past 30 mins</h3>
-                     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+
                     <canvas id="chart2" width="300" height="200"></canvas>
                         <script>
                           // bar chart data
-                          var barData = {
+                          var barData2 = {
                             labels : [
                               {% for item in time %}
                                 "{{ item }}",
@@ -116,29 +109,19 @@
                         ]
                           }
 
-                          Chart.defaults.global.animationSteps = 50;
-                          Chart.defaults.global.tooltipYPadding = 16;
-                          Chart.defaults.global.tooltipCornerRadius = 0;
-                          Chart.defaults.global.tooltipTitleFontStyle = "normal";
-                          Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
-                          Chart.defaults.global.animationEasing = "easeOutBounce";
-                          Chart.defaults.global.responsive = false;
-                          Chart.defaults.global.scaleLineColor = "black";
-                          Chart.defaults.global.scaleFontSize = 16;
 
                           // get bar chart canvas
-                          var mychart = document.getElementById("chart").getContext("2d");
+                          var mychart2 = document.getElementById("chart2").getContext("2d");
 
-                          steps = 10
-                          max = {{ max2 }}
+                          steps=1
+                          max2 = {{ max2 }}
                           // draw bar chart
-                          var LineChartDemo = new Chart(mychart).Line(barData, {
+                          var LineChartDemo2 = new Chart(mychart2).Line(barData2, {
                             scaleOverride: true,
                             scaleSteps: steps,
-                            scaleStepWidth: Math.ceil(max / steps),
+                            scaleStepWidth: Math.ceil(max2 / steps),
                             scaleStartValue: 0,
                             scaleShowVerticalLines: true,
-                            scaleShowGridLines : true,
                             barShowStroke : true,
                             scaleShowLabels: true,
                             bezierCurve: false,

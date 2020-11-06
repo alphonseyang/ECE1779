@@ -95,11 +95,13 @@ def get_cpu_utilization(instance_id):
         Unit="Percent"
     )
     value = []
-    var = [value.append(temp["Average"] for temp in response["Datapoints"])]
+    for temp in response["Datapoints"]:
+        value.append(temp["Average"])
     return value
 
 
 def get_http_request(instance_id):
+
     cloudwatch = aws_helper.session.client("cloudwatch")
     cur_time = datetime.utcnow()
     response = cloudwatch.get_metric_statistics(
@@ -120,6 +122,7 @@ def get_http_request(instance_id):
         Unit="Count"
     )
     value = []
-    [value.append(temp["Sum"] for temp in response["Datapoints"])]
+    for temp in response["Datapoints"]:
+        value.append(temp["Sum"])
     return value
 

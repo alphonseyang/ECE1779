@@ -30,7 +30,6 @@
                     <h3 class="card-title text-center">Workers list</h3>
                     <div class="card-header text-center">Current size: {{ num_workers }}</div>
                     <div class="card-body">
-                        <form class="form-signin" method="post" action="{{ '/show_charts' }}">
                         <table class="table">
                           <thead>
                             <tr>
@@ -49,13 +48,12 @@
                                       <input type="submit" value="details">
                                   </form> </td>
                                    {%else%}
-                                   <td>details</td>>
+                                   <td>details</td>
                                    {%endif%}
                                 </tr>
                               {%endfor%}
                             </tbody>
                         </table>
-                        </form>
                     </div>
                 </div>
             </div>

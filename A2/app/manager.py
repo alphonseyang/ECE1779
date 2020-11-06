@@ -46,9 +46,16 @@ def display_main_page():
 def get_worker_detail(instance_id):
     with lock:
         min = range(1, 31)
+        max1 = 100
         cpu_util = worker.get_cpu_utilization(instance_id)
         http_rate = worker.get_http_request(instance_id)
-    return render_template("worker_detail.html", mins=min, cpu=cpu_util,
+        if len(cpu_util) == 0:
+            cpu_util=[0] * 30
+        if len(http_rate) == 0:
+            http_rate=[0] *30
+        max2 = max(http_rate)+1
+
+    return render_template("worker_detail.html", mins=min, cpu=cpu_util, max1=max1, max2=max2,
                            time=min, rate=http_rate)
 
 
