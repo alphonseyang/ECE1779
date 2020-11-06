@@ -53,18 +53,6 @@ def get_worker_detail(instance_id):
                            time=min, rate=http_rate)
 
 
-# use the auto-scaler keeps track of the number of the workers
-#   track (it runs every minute), depends on your design
-def workers_chart():
-    return
-
-
-def list_workers():
-    with lock:
-        update_workers_status()
-    return
-
-
 # up/down button invoked method, first verify the decision then pass over to change_workers_num to finish
 @bp.route("/change_workers", methods=["POST"])
 def change_workers():

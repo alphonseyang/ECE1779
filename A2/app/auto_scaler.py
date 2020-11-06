@@ -30,17 +30,20 @@ def start():
 
                 # auto-scaler algorithm to check for decision
                 decision, num = auto_scaler_make_decision()
+                success = True
                 # based on the decision, start the action
                 if decision == constants.INCREASE_DECISION:
-                    manager.change_workers_num(True, num)
+                    success = manager.change_workers_num(True, num)
                     print("INFO: add {} new workers to the pool".format(num))
                 elif decision == constants.DECREASE_DECISION:
-                    manager.change_workers_num(False, num)
+                    success = manager.change_workers_num(False, num)
                     print("INFO: remove {} workers from the pool".format(num))
                 elif decision == constants.MAINTAIN_DECISION:
                     print("INFO: no auto-scaling change in the worker pool")
                 else:
                     print("ERROR: unexpected auto-scaler decision {}".format(decision))
+                if not success:
+                    print("ERROR: issue with change_workers_num, please investigate")
         except Exception as e:
             print("ERROR: unexpected error {}".format(e))
         finally:
@@ -95,28 +98,30 @@ def get_cpu_utilization_average():
             ],
             Unit="Percent"
         )
-        if response.get("ResponseMetadata", dict()).get("HTTPStatusCode") == HTTPStatus.OK and len(response.get("Datapoints")) > 0:
+        if response.get("ResponseMetadata", dict()).get("HTTPStatusCode") == HTTPStatus.OK and \
+                len(response.get("Datapoints")) > 0:
             cpu_utilization_avg = sum([point["Average"] for point in response["Datapoints"]]) / 2
             cpu_utils_list.append(cpu_utilization_avg)
-        elif manager.workers_map[instance_id] == constants.STARTING_STATE:
+        else:
             cpu_utils_list.append(0)
-    return sum(cpu_utils_list) / len(cpu_utils_list) if cpu_utils_list else -1
+    avg_cpu_util = sum(cpu_utils_list) / len(cpu_utils_list)
+    return avg_cpu_util if avg_cpu_util > 0 else -1
 
 
 # determine the num change based on the decision
 def determine_num_change(decision):
     change_num = 0
-    num_running = sum([1 for state in manager.workers_map.values() if state == constants.RUNNING_STATE])
+    total_instances = len(manager.workers_map)
     num_starting = sum([1 for state in manager.workers_map.values() if state == constants.STARTING_STATE])
-    num_terminating = sum([1 for state in manager.workers_map.values() if state == constants.STOPPING_STATE])
+    num_stopping = sum([1 for state in manager.workers_map.values() if state == constants.STOPPING_STATE])
 
     # determine the number of workers to increase/decrease, then check if there are some working on it now
     # if some already pending, just do the remaining, also prevent grow/shrink too many times
     if decision == constants.INCREASE_DECISION:
-        change_num = max(1, int((constants.EXPAND_RATIO - 1) * num_running))
+        change_num = max(1, int(constants.EXPAND_RATIO - 1) * total_instances)
         change_num = max(0, change_num - num_starting)
     elif decision == constants.DECREASE_DECISION:
-        change_num = max(1, int((constants.SHRINK_RATIO - 1) * num_running))
-        change_num = max(0, change_num - num_terminating)
+        change_num = max(1, total_instances * constants.SHRINK_RATIO)
+        change_num = max(0, change_num - num_stopping)
 
-    return change_num
+    return int(change_num)

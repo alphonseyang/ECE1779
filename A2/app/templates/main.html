@@ -31,30 +31,33 @@
                     <div class="card-header text-center">Current size: {{ num_workers }}</div>
                     <div class="card-body">
                         <form class="form-signin" method="post" action="{{ '/show_charts' }}">
-                        <table class="table">
-                          <thead>
-                            <tr>
-                              <th scope="col">Instance ID</th>
-                              <th scope="col">State</th>
-                              <th scope="col">Details</th>
-                            </tr>
-                          </thead>
-                            <tbody>
-                              {%for worker in workers%}
-                               <tr>
-                                  <td>{{worker}}</td>
-                                  <td>{{workers[worker]}}</td>
-                                   {%if workers[worker] == "running" %}
-                                  <td> <form action="{{url_for('manager.get_worker_detail',instance_id=worker)}}" method="post">
-                                      <input type="submit" value="details">
-                                  </form> </td>
-                                   {%else%}
-                                   <td>details</td>>
-                                   {%endif%}
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Instance ID</th>
+                                    <th scope="col">State</th>
+                                    <th scope="col">Details</th>
                                 </tr>
-                              {%endfor%}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                {%for worker in workers%}
+                                <tr>
+                                    <td>{{worker}}</td>
+                                    <td>{{workers[worker]}}</td>
+                                    {%if workers[worker] == "running" %}
+                                    <td>
+                                        <form action="{{url_for('manager.get_worker_detail',instance_id=worker)}}"
+                                              method="post">
+                                            <input type="submit" value="details">
+                                        </form>
+                                    </td>
+                                    {%else%}
+                                    <td>N/A</td>
+                                    {%endif%}
+                                </tr>
+                                {%endfor%}
+                                </tbody>
+                            </table>
                         </form>
                     </div>
                 </div>
@@ -65,9 +68,9 @@
                 <div class="card card-signin my-5">
                     <br>
                     <h3 class="card-title text-center">Workers trend for past 30 mins</h3>
-                     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+                    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
                     <canvas id="chart" width="300" height="200"></canvas>
-                        <script>
+                    <script>
                           // bar chart data
                           var barData = {
                             labels : [
@@ -119,7 +122,7 @@
                             scaleShowLabels: true,
                             bezierCurve: false,
                           });
-                        </script>
+                    </script>
                 </div>
             </div>
 
