@@ -2,6 +2,7 @@
 all manager related functionality is here, this is designed to be place to host
 all manager functionality, the tasks dispatched by main module will enter here、
 """
+import sys
 from datetime import datetime, timedelta
 from threading import Lock
 
@@ -35,7 +36,7 @@ def display_main_page():
         values = get_num_worker()
         if len(values) == 0:
             values = [0] * 30
-        print(workers_map)
+        print("Current workers: {}".format(workers_map))
     return render_template("main.html", num_workers=len(workers_map), workers=workers_map, max=8,
                            values=values, labels=labels)
 
@@ -89,7 +90,7 @@ def change_workers():
                           constants.ERROR)
                 else:
                     # remove worker
-                    success = change_workers(False, 1)
+                    success = change_workers_num(False, 1)
                     if success:
                         flash("Successfully removed a new worker from the pool", constants.INFO)
                     else:
@@ -123,7 +124,7 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
         else:
             stopping = 0
             inslist = []
-            for ins, state in workers_map:
+            for ins, state in workers_map.items():
                 if state == constants.STOPPING_STATE:
                     stopping += 1
                 else:
@@ -142,6 +143,20 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
 # shut down all workers and the current manager app (close everything but keep data)
 @bp.route("/terminate_manager", methods=["POST"])
 def terminate_manager():
+    if constants.IS_REMOTE:
+        clean_all_workers()
+        sys.exit(4)
+    else:
+        shutdown = request.environ.get("werkzeug.server.shutdown")
+        if not shutdown:
+            flash("Failed to terminate manager app", constants.ERROR)
+            return
+        clean_all_workers()
+        shutdown()
+
+
+# helper method to clear all workers when invoked by the terminate_manager method
+def clean_all_workers():
     with lock:
         for instance_id, status in workers_map.items():
             if status == constants.RUNNING_STATE:
