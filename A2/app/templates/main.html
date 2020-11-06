@@ -44,9 +44,13 @@
                                <tr>
                                   <td>{{worker}}</td>
                                   <td>{{workers[worker]}}</td>
-                                  <td> <form action="{{url_for('manager.get_worker_detail',instance_id=key)}}" method="post">
-                                      <input type="submit" value="detailes">
+                                   {%if workers[worker] == "running" %}
+                                  <td> <form action="{{url_for('manager.get_worker_detail',instance_id=worker)}}" method="post">
+                                      <input type="submit" value="details">
                                   </form> </td>
+                                   {%else%}
+                                   <td>details</td>>
+                                   {%endif%}
                                 </tr>
                               {%endfor%}
                             </tbody>

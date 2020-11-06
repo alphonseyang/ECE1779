@@ -70,6 +70,7 @@ def change_workers():
     with lock:
         if request.method == "POST":
             if request.form.get("upBtn"):
+                print("up")
                 # make sure the decision is allowed
                 decision = verify_decision(constants.INCREASE_DECISION)
                 if decision != constants.INCREASE_DECISION:
@@ -83,6 +84,7 @@ def change_workers():
                     else:
                         flash("Failed to increase pool size, please try again later", constants.ERROR)
             elif request.form.get('downBtn'):
+                print("down")
                 # make sure the decision is allowed
                 decision = verify_decision(constants.DECREASE_DECISION)
                 if decision != constants.DECREASE_DECISION:
@@ -90,7 +92,7 @@ def change_workers():
                           constants.ERROR)
                 else:
                     # remove worker
-                    success = change_workers(False, 1)
+                    success = change_workers_num(False, 1)
                     if success:
                         flash("Successfully removed a new worker from the pool", constants.INFO)
                     else:
@@ -124,11 +126,11 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
         else:
             stopping = 0
             inslist = []
-            for ins, state in workers_map:
-                if state == constants.STOPPING_STATE:
+            for instance_id, status in workers_map.items():
+                if status == constants.STOPPING_STATE:
                     stopping += 1
                 else:
-                    inslist.append(ins)
+                    inslist.append(instance_id)
             if (len(workers_map) - changed_workers_num - stopping) < 1:
                 flash("Can not downsize worker size to 0 ", constants.ERROR)
                 return False
@@ -186,8 +188,8 @@ def update_workers_status():
                     terminate_worker.append(instance.id)
 
     for ins in start_worker:
-        worker.start_worker(ins)
-        worker.register_worker(ins)
+        #worker.start_worker(ins)
+        #worker.register_worker(ins)
         workers_map[ins] = constants.RUNNING_STATE
     for ins in terminate_worker:
         del workers_map[ins]
