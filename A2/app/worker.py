@@ -56,23 +56,6 @@ def deregister_worker(instance_id):
     )
 
 
-# call the worker to start the user app
-def start_worker(instance_id):
-    ssm_client = aws_helper.session.client('ssm', region_name='us-east-1')
-    response = ssm_client.send_command(
-        InstanceIds=[instance_id],
-        DocumentName="AWS-RunShellScript",
-        Parameters={
-            'commands': [
-                'cd ~/Desktop/ECE1779_Projects/ECE1779/A1',
-                'mkdir -p logs',
-                '[ -e logs/access.log ] && rm logs/access.log',
-                '[ -e logs/error.log ] && rm logs/error.log',
-                './venv/bin/gunicorn -w 4 "app:create_app()" -e FLASK_ENV=production -b 0.0.0.0:5000 --access-logfile logs/access.log --error-logfile logs/error.log'
-            ]
-        })
-
-
 def get_cpu_utilization(instance_id):
     cloudwatch = aws_helper.session.client("cloudwatch")
     cur_time = datetime.utcnow()

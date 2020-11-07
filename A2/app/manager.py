@@ -212,8 +212,7 @@ def update_workers_status():
                     terminate_worker.append(instance.id)
 
     for ins in start_worker:
-        # worker.start_worker(ins)
-        # worker.register_worker(ins)
+        worker.register_worker(ins)
         workers_map[ins] = constants.RUNNING_STATE
     for ins in terminate_worker:
         del workers_map[ins]
