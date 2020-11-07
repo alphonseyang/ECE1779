@@ -1,43 +1,20 @@
-<!doctype html>
-<head>
-    <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-</head>
-<section class="content">
-    <header>
-        {% block header %}
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand">ECE1779 Manager App</a>
-        </nav>
-        {% endblock %}
-    </header>
+{% extends 'base.html' %}
 
-    {% for category, message in get_flashed_messages(with_categories=true) %}
-    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} flash text-center" role="alert">
-        {{ message }}
-    </div>
-    {% endfor %}
+{% block title %}Worker Detail{% endblock %}
 
-    {% block content %}
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
-    <body>
-      <input  class="btn btn-outline-info"
-                action="action"
-                onclick="window.history.go(-1); return false;"
-                type="submit"
-                value="go back"
-        />
-    <div class="container">
-        <div class="row">
+{% block content %}
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+<body>
+<div class="container">
+    <div class="row">
 
-            <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
-                <div class="card card-signin my-5">
-                    <br>
-                    <h3 class="card-title text-center">Total CPU utilization</h3>
+        <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">Total CPU utilization</h3>
 
-                    <canvas id="chart" width="300" height="200"></canvas>
-                        <script>
+                <canvas id="chart" width="300" height="200"></canvas>
+                <script>
                           // bar chart data
                           var barData1 = {
                             labels : [
@@ -81,16 +58,17 @@
                             scaleShowLabels: true,
                             bezierCurve: false,
                           });
-                        </script>
-                </div>
-            </div>
-            <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
-                <div class="card card-signin my-5">
-                    <br>
-                    <h3 class="card-title text-center">Rate of HTTP requests received for the past 30 mins</h3>
 
-                    <canvas id="chart2" width="300" height="200"></canvas>
-                        <script>
+                </script>
+            </div>
+        </div>
+        <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">Rate of HTTP requests received for the past 30 mins</h3>
+
+                <canvas id="chart2" width="300" height="200"></canvas>
+                <script>
                           // bar chart data
                           var barData2 = {
                             labels : [
@@ -132,12 +110,12 @@
                             scaleShowLabels: true,
                             bezierCurve: false,
                           });
-                        </script>
-                </div>
-            </div>
-          </div>
-    </div>
-    </body>
 
-    {% endblock %}
-</section>
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+{% endblock %}

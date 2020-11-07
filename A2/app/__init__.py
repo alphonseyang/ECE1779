@@ -2,7 +2,7 @@ from threading import Thread
 
 from flask import Flask
 
-from app import auto_scaler, manager
+from app import auto_scaler, database, manager
 
 '''
 main app factory that creates the flask app
@@ -14,8 +14,10 @@ def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.secret_key = "ECE1779"
 
-    from app import manager
     app.register_blueprint(manager.bp)
+    app.register_blueprint(auto_scaler.bp)
+
+    database.init_db()
 
     # initialize during app creation
     manager.app_initialization()

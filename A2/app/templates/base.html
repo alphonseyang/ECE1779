@@ -1,0 +1,30 @@
+<!doctype html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<section class="content">
+    <header>
+        {% block header %}
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href={{url_for('manager.display_main_page')}}>ECE1779 Manager App</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="nav navbar-nav">
+                    <li class="nav-item">
+                        <a href={{url_for('auto_scaler.auto_scaler_policy')}} class="nav-link">Auto-Scaler Policy</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        {% endblock %}
+    </header>
+
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} flash text-center" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+
+    {% block content %}{% endblock %}
+</section>

@@ -140,6 +140,7 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
 # shut down all workers and the current manager app (close everything but keep data)
 @bp.route("/terminate_manager", methods=["POST"])
 def terminate_manager():
+    database.get_conn().close()
     if constants.IS_REMOTE:
         clean_all_workers()
         sys.exit(4)
@@ -180,7 +181,6 @@ def remove_app_data():
             if command:
                 cursor.execute(command)
         db_conn.commit()
-        db_conn.close()
     except Exception as e:
         flash("Failed to remove application data, please try again", constants.ERROR)
     else:
@@ -245,8 +245,6 @@ def get_num_worker():
     value = []
     for temp in response["Datapoints"]:
         value.append(temp["Sum"])
-    print(response)
-    print(value)
     return value
 
 

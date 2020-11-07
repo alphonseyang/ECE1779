@@ -1,72 +1,59 @@
-<!doctype html>
-<head>
-    <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-</head>
-<section class="content">
-    <header>
-        {% block header %}
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand">ECE1779 Manager App</a>
-        </nav>
-        {% endblock %}
-    </header>
+{% extends 'base.html' %}
 
-    {% for category, message in get_flashed_messages(with_categories=true) %}
-    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} flash text-center" role="alert">
-        {{ message }}
-    </div>
-    {% endfor %}
+{% block title %}Manager App{% endblock %}
 
-    <body>
-    <div class="container">
-        <div class="row">
-
-            <!--list workers-->
-            <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
-                <div class="card card-signin my-5">
-                    <br>
-                    <h3 class="card-title text-center">Workers</h3>
-                    <div class="card-header text-center">User App Entry URL: <a href="//{{dns_name}}" target="_blank">{{dns_name}}</a></div>
-                    <div class="card-header text-center">Current size: {{ num_workers }}</div>
-                    <div class="card-body">
-                        <table class="table">
-                          <thead>
-                            <tr>
-                              <th scope="col">Instance ID</th>
-                              <th scope="col">State</th>
-                              <th scope="col">Details</th>
-                            </tr>
-                          </thead>
-                            <tbody>
-                              {%for worker in workers%}
-                               <tr>
-                                  <td>{{worker}}</td>
-                                  <td>{{workers[worker]}}</td>
-                                   {%if workers[worker] == "running" %}
-                                  <td> <form action="{{url_for('manager.get_worker_detail',instance_id=worker)}}" method="post">
-                                      <input type="submit" value="details">
-                                  </form> </td>
-                                   {%else%}
-                                   <td>N/A</td>
-                                   {%endif%}
-                                </tr>
-                              {%endfor%}
-                            </tbody>
-                        </table>
-                    </div>
+{% block content %}
+<body>
+<div class="container">
+    <div class="row">
+        <!--list workers-->
+        <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">Workers</h3>
+                <div class="card-header text-center">User App Entry URL: <a href="//{{dns_name}}" target="_blank">{{dns_name}}</a>
+                </div>
+                <div class="card-header text-center">Current size: {{ num_workers }}</div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">Instance ID</th>
+                            <th scope="col">State</th>
+                            <th scope="col">Details</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {%for worker in workers%}
+                        <tr>
+                            <td>{{worker}}</td>
+                            <td>{{workers[worker]}}</td>
+                            {%if workers[worker] == "running" %}
+                            <td>
+                                <form action="{{url_for('manager.get_worker_detail',instance_id=worker)}}"
+                                      method="post">
+                                    <input type="submit" value="details">
+                                </form>
+                            </td>
+                            {%else%}
+                            <td>N/A</td>
+                            {%endif%}
+                        </tr>
+                        {%endfor%}
+                        </tbody>
+                    </table>
                 </div>
             </div>
+        </div>
 
-            <!--number of workers for 30 mins-->
-            <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
-                <div class="card card-signin my-5">
-                    <br>
-                    <h3 class="card-title text-center">Workers trend for past 30 mins</h3>
-                    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
-                    <canvas id="chart" width="300" height="200"></canvas>
-                    <script>
+        <!--number of workers for 30 mins-->
+        <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">Workers trend for past 30 mins</h3>
+                <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+                <canvas id="chart" width="300" height="200"></canvas>
+                <script>
                           // bar chart data
                           var barData = {
                             labels : [
@@ -119,53 +106,53 @@
                             scaleShowLabels: true,
                             bezierCurve: false,
                           });
-                    </script>
+
+                </script>
+            </div>
+        </div>
+
+        <!--the buttons to control workers-->
+        <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">Change Pool Size</h3>
+                <div class="card-header text-center">Current size: {{ num_workers }}</div>
+                <div class="card-body">
+                    <form class="form-signin" method="post" action="{{ '/change_workers' }}">
+                        <div class="form-label-group text-center">
+                            <input class="btn btn-primary text-uppercase" type="submit" value="Up" name="upBtn">
+                            <input class="btn btn-primary text-uppercase" type="submit" value="Down"
+                                   name="downBtn">
+                        </div>
+                    </form>
                 </div>
             </div>
+        </div>
 
-            <!--the buttons to control workers-->
-            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
-                <div class="card card-signin my-5">
-                    <br>
-                    <h3 class="card-title text-center">Change Pool Size</h3>
-                    <div class="card-header text-center">Current size: {{ num_workers }}</div>
-                    <div class="card-body">
-                        <form class="form-signin" method="post" action="{{ '/change_workers' }}">
-                            <div class="form-label-group text-center">
-                                <input class="btn btn-primary text-uppercase" type="submit" value="Up" name="upBtn">
-                                <input class="btn btn-primary text-uppercase" type="submit" value="Down"
-                                       name="downBtn">
-                            </div>
-                        </form>
-                    </div>
+        <!--the buttons to control manager app-->
+        <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">Manager Features</h3>
+                <div class="card-header text-center">Stop Manager</div>
+                <div class="card-body">
+                    <form class="form-signin" method="post" action="{{ '/terminate_manager' }}">
+                        <div class="form-label-group text-center">
+                            <input class="btn btn-primary text-uppercase" type="submit" value="Stop">
+                        </div>
+                    </form>
                 </div>
-            </div>
-
-            <!--the buttons to control manager app-->
-            <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
-                <div class="card card-signin my-5">
-                    <br>
-                    <h3 class="card-title text-center">Manager Features</h3>
-                    <div class="card-header text-center">Stop Manager</div>
-                    <div class="card-body">
-                        <form class="form-signin" method="post" action="{{ '/terminate_manager' }}">
-                            <div class="form-label-group text-center">
-                                <input class="btn btn-primary text-uppercase" type="submit" value="Stop">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="card-header text-center">Delete Application Data</div>
-                    <div class="card-body">
-                        <form class="form-signin" method="post" action="{{ '/remove_app_data' }}">
-                            <div class="form-label-group text-center">
-                                <input class="btn btn-primary text-uppercase" type="submit" value="Delete">
-                            </div>
-                        </form>
-                    </div>
+                <div class="card-header text-center">Delete Application Data</div>
+                <div class="card-body">
+                    <form class="form-signin" method="post" action="{{ '/remove_app_data' }}">
+                        <div class="form-label-group text-center">
+                            <input class="btn btn-primary text-uppercase" type="submit" value="Delete">
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-    </body>
-
-</section>
+</div>
+</body>
+{% endblock %}

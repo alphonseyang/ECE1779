@@ -4,4 +4,7 @@ pytz
 requests
 gunicorn
 numpy
+mysql-connector-python
+PyMySQL
 pymysql
+cryptography
