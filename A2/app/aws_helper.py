@@ -22,7 +22,8 @@ def get_credentials():
         session = boto3.Session(
             aws_access_key_id=result["AccessKeyId"],
             aws_secret_access_key=result["SecretAccessKey"],
-            aws_session_token=result["Token"]
+            aws_session_token=result["Token"],
+            region_name="us-east-1"
         )
         expires = dateutil.parser.parse(result["Expiration"])
         print("INFO: successfully retrieved new credentials, expires at {}".format(expires))
