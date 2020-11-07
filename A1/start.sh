@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # go to the directory where host the files
-cd ~/Desktop/ECE1779_Projects/ECE1779/A1
+cd /home/ubuntu/Desktop/ECE1779_Projects/ECE1779/A1
 
 # make logs directory if not exist
 mkdir -p logs
