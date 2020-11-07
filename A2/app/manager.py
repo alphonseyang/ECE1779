@@ -22,6 +22,7 @@ def app_initialization():
     # retrieve credentials first
     aws_helper.check_credentials_expire()
     change_workers_num(True, 1)
+    flash("The initialization of the first worker is usually slow (2-3 minutes), please be patient", constants.INFO)
     print("app initialized successfully")
 
 
