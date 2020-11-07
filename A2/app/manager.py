@@ -22,7 +22,7 @@ def app_initialization():
     # retrieve credentials first
     aws_helper.check_credentials_expire()
     change_workers_num(True, 1)
-    flash("The initialization of the first worker is usually slow (2-3 minutes), please be patient", constants.INFO)
+    # flash("The initialization of the first worker is usually slow (2-3 minutes), please be patient", constants.INFO)
     print("app initialized successfully")
 
 
@@ -231,17 +231,23 @@ def get_num_worker():
                 "Name": "LoadBalancer",
                 "Value": "app/test7/2c8f8c35d8b2d055"
             },
+            {
+                "Name": "TargetGroup",
+                "Value": "targetgroup/test8/7dcf9d434c066607"
+            }
         ],
         StartTime=cur_time - timedelta(seconds=1800),
         EndTime=cur_time,
         Period=60,
         Statistics=[
-            "Average"
+            "Sum"
         ],
     )
     value = []
     for temp in response["Datapoints"]:
-        value.append(temp["Average"])
+        value.append(temp["Sum"])
+    print(response)
+    print(value)
     return value
 
 
