@@ -7,14 +7,12 @@ from app import aws_helper
 def create_worker(num):
     print("create worker, ", num)
     ec2 = aws_helper.session.resource("ec2", region_name="us-east-1")
-    instances = ec2.create_instances(ImageId='ami-0c4d950413c363395', MinCount=num, MaxCount=num,
+    instances = ec2.create_instances(ImageId='ami-0dc4da91f8429c09c', MinCount=num, MaxCount=num,
                                      SecurityGroupIds=['sg-09e21c9813da24aa1'], InstanceType='t2.small',
                                      LaunchTemplate={
                                          'LaunchTemplateId': 'lt-0556f998666a52f4e',
-                                         'Version': '5'
+                                         'Version': '6'
                                      })
-    # TODO: to be removed later
-    # instances[0].wait_until_running()
     return [instance.id for instance in instances]
 
 

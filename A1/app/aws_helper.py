@@ -27,7 +27,7 @@ def collect_requests_count(instance_id):
 
             with lock:
                 current_timestamp = datetime.fromtimestamp((datetime.utcnow().timestamp() // 60 - 1) * 60)
-                cloudwatch = session.client("cloudwatch")
+                cloudwatch = session.client("cloudwatch", region_name="us-east-1")
                 cloudwatch.put_metric_data(
                     MetricData=[{
                         'MetricName': 'Requests',
