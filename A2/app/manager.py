@@ -241,15 +241,17 @@ def get_num_worker():
         EndTime=cur_time,
         Period=60,
         Statistics=[
-            "Sum"
+            "Average"
         ],
     )
-    value = []
-    sorted_d=[]
+    value = [0] * 30
     if len(response["Datapoints"]) != 0:
         sorted_d = sorted(response["Datapoints"], key=lambda x: x["Timestamp"])
-        for temp in sorted_d:
-            value.append(temp["Sum"])
+        for i in range(len(sorted_d)):
+            if i == 30: break
+            # value index, provides offset
+            vi = i + 30 - len(sorted_d)
+            value[vi] = sorted_d[i]["Average"]
     return value
 
 

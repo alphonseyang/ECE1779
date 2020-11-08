@@ -56,7 +56,6 @@ def deregister_worker(instance_id):
 def get_cpu_utilization(instance_id):
     cloudwatch = aws_helper.session.client("cloudwatch")
     cur_time = datetime.utcnow()
-    cpu_utils_list = list()
     response = cloudwatch.get_metric_statistics(
         Namespace="AWS/EC2",
         MetricName="CPUUtilization",
@@ -75,7 +74,6 @@ def get_cpu_utilization(instance_id):
         Unit="Percent"
     )
     value = []
-    sorted_d = []
     if len(response["Datapoints"]) != 0:
         sorted_d = sorted(response["Datapoints"], key=lambda x: x["Timestamp"])
         for temp in sorted_d:
@@ -105,7 +103,6 @@ def get_http_request(instance_id):
     )
 
     value = []
-    sorted_d = []
     if len(response["Datapoints"]) != 0:
         sorted_d = sorted(response["Datapoints"], key=lambda x: x["Timestamp"])
         for temp in sorted_d:
