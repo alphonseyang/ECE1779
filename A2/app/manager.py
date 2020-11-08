@@ -3,6 +3,7 @@ all manager related functionality is here, this is designed to be place to host
 all manager functionality, the tasks dispatched by main module will enter here、
 """
 import sys
+from collections import OrderedDict
 from datetime import datetime, timedelta
 from threading import Lock
 
@@ -13,7 +14,7 @@ from app import aws_helper, constants, database, worker
 bp = Blueprint("manager", __name__, url_prefix="/")
 # shared by main thread and auto-scaler thread to prevent race condition
 lock = Lock()
-workers_map = dict()
+workers_map = OrderedDict()
 
 
 # create a starting worker when app is started and maybe other initialization
@@ -22,7 +23,7 @@ def app_initialization():
     # retrieve credentials first
     aws_helper.check_credentials_expire()
     change_workers_num(True, 1)
-    print("app initialized successfully")
+    print("INFO: app initialized successfully")
 
 
 # main page, need to call separate helper methods here
@@ -36,7 +37,7 @@ def display_main_page():
         values = get_num_worker()
         if len(values) == 0:
             values = [0] * 30
-        print("Current workers: {}".format(workers_map))
+        print("INFO: Current workers: {}".format(workers_map))
     dns_name = get_load_balancer_dns()
     return render_template("main.html", num_workers=len(workers_map), workers=workers_map, max=8,
                            values=values, labels=labels, dns_name=dns_name)
@@ -65,7 +66,7 @@ def change_workers():
     with lock:
         if request.method == "POST":
             if request.form.get("upBtn"):
-                print("Add worker")
+                print("INFO: Adding new worker")
                 # make sure the decision is allowed
                 decision = verify_decision(constants.INCREASE_DECISION)
                 if decision != constants.INCREASE_DECISION:
@@ -79,7 +80,7 @@ def change_workers():
                     else:
                         flash("Failed to increase pool size, please try again later", constants.ERROR)
             elif request.form.get('downBtn'):
-                print("Remove worker")
+                print("INFO: Removing worker")
                 # make sure the decision is allowed
                 decision = verify_decision(constants.DECREASE_DECISION)
                 if decision != constants.DECREASE_DECISION:
@@ -112,7 +113,7 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
             instance_ids = worker.create_worker(changed_workers_num)
             for instance_id in instance_ids:
                 workers_map[instance_id] = constants.STARTING_STATE
-                print("Successfully created new worker with id {}".format(instance_id))
+                print("INFO: Successfully created new worker with id {}".format(instance_id))
                 return True
     else:
         if (len(workers_map) - changed_workers_num) < 1:
@@ -130,10 +131,11 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
                 flash("Can not downsize worker size to 0 ", constants.ERROR)
                 return False
             else:
-                for num in range(changed_workers_num):
-                    workers_map[inslist[num]] = constants.STOPPING_STATE
-                    worker.deregister_worker(inslist[num])
-                    worker.destroy_worker(inslist[num])
+                for i in range(changed_workers_num):
+                    instance_id = inslist.pop()
+                    workers_map[instance_id] = constants.STOPPING_STATE
+                    worker.deregister_worker(instance_id)
+                    worker.destroy_worker(instance_id)
     return True
 
 

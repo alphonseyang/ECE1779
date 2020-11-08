@@ -5,7 +5,6 @@ from app import aws_helper
 
 # create a new worker by starting a EC2 instance, returns the instance_id
 def create_worker(num):
-    print("create worker, ", num)
     ec2 = aws_helper.session.resource("ec2", region_name="us-east-1")
     instances = ec2.create_instances(ImageId='ami-0dc4da91f8429c09c', MinCount=num, MaxCount=num,
                                      SecurityGroupIds=['sg-09e21c9813da24aa1'], InstanceType='t2.small',
