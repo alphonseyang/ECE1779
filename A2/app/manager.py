@@ -35,8 +35,6 @@ def display_main_page():
         # workers_chart()
         labels = range(1, 31)
         values = get_num_worker()
-        if len(values) == 0:
-            values = [0] * 30
         print("INFO: Current workers: {}".format(workers_map))
     dns_name = get_load_balancer_dns()
     return render_template("main.html", num_workers=len(workers_map), workers=workers_map, max=8,
@@ -51,10 +49,6 @@ def get_worker_detail(instance_id):
         max1 = 100
         cpu_util = worker.get_cpu_utilization(instance_id)
         http_rate = worker.get_http_request(instance_id)
-        if len(cpu_util) == 0:
-            cpu_util = [0] * 30
-        if len(http_rate) == 0:
-            http_rate = [0] * 30
         max2 = max(http_rate)+1
 
     return render_template("worker_detail.html", cpu=cpu_util, max1=max1, max2=max2, time=minutes, rate=http_rate)
@@ -114,7 +108,7 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
             for instance_id in instance_ids:
                 workers_map[instance_id] = constants.STARTING_STATE
                 print("INFO: Successfully created new worker with id {}".format(instance_id))
-                return True
+            return True
     else:
         if (len(workers_map) - changed_workers_num) < 1:
             flash("Can not downsize worker size to 0 ", constants.ERROR)

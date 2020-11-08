@@ -73,11 +73,14 @@ def get_cpu_utilization(instance_id):
         ],
         Unit="Percent"
     )
-    value = []
+    value = [0] * 30
     if len(response["Datapoints"]) != 0:
         sorted_d = sorted(response["Datapoints"], key=lambda x: x["Timestamp"])
-        for temp in sorted_d:
-            value.append(temp["Average"])
+        for i in range(len(sorted_d)):
+            if i == 30: break
+            # value index, provides offset
+            vi = i + 30 - len(sorted_d)
+            value[vi] = sorted_d[i]["Average"]
     return value
 
 
@@ -102,11 +105,14 @@ def get_http_request(instance_id):
         Unit="Count"
     )
 
-    value = []
+    value = [0] * 30
     if len(response["Datapoints"]) != 0:
         sorted_d = sorted(response["Datapoints"], key=lambda x: x["Timestamp"])
-        for temp in sorted_d:
-            value.append(temp["Sum"])
+        for i in range(len(sorted_d)):
+            if i == 30: break
+            # value index, provides offset
+            vi = i + 30 - len(sorted_d)
+            value[vi] = sorted_d[i]["Sum"]
 
     return value
 

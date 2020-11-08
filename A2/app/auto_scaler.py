@@ -73,10 +73,10 @@ def start():
                 # based on the decision, start the action
                 if decision == constants.INCREASE_DECISION:
                     success = manager.change_workers_num(True, num)
-                    print("INFO: add {} new workers to the pool".format(num))
+                    print("INFO: added {} new workers to the pool".format(num))
                 elif decision == constants.DECREASE_DECISION:
                     success = manager.change_workers_num(False, num)
-                    print("INFO: remove {} workers from the pool".format(num))
+                    print("INFO: removed {} workers from the pool".format(num))
                 elif decision == constants.MAINTAIN_DECISION:
                     print("INFO: no auto-scaling change in the worker pool")
                 else:
@@ -101,6 +101,7 @@ def auto_scaler_make_decision():
     # check the CPU average to determine the decision
     decision = constants.MAINTAIN_DECISION
     cpu_utilization_avg = get_cpu_utilization_average()
+    print("INFO: Current Average CPU Utilization is {}".format(cpu_utilization_avg))
     if cpu_utilization_avg != -1:
         if cpu_utilization_avg >= policy[constants.CPU_UTIL_GROW_THRESHOLD]:
             decision = constants.INCREASE_DECISION
@@ -130,7 +131,7 @@ def get_cpu_utilization_average():
                     "Value": instance_id
                 },
             ],
-            StartTime=cur_time - timedelta(seconds=120),
+            StartTime=cur_time - timedelta(seconds=180),
             EndTime=cur_time,
             Period=60,
             Statistics=[
@@ -138,8 +139,12 @@ def get_cpu_utilization_average():
             ],
             Unit="Percent"
         )
-        if response.get("ResponseMetadata", dict()).get("HTTPStatusCode") == HTTPStatus.OK and len(response.get("Datapoints")) > 0:
-            cpu_utilization_avg = sum([point["Average"] for point in response["Datapoints"]]) / len(response["Datapoints"])
+        datapoints = response.get("Datapoints", list())
+        if len(datapoints) > 2:
+            datapoints.sort(key=lambda x: x["Timestamp"])
+            datapoints = datapoints[-2:]
+        if response.get("ResponseMetadata", dict()).get("HTTPStatusCode") == HTTPStatus.OK and len(datapoints) > 0:
+            cpu_utilization_avg = sum([point["Average"] for point in datapoints]) / len(datapoints)
             cpu_utils_list.append(cpu_utilization_avg)
         else:
             cpu_utils_list.append(0)
