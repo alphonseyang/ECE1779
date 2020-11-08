@@ -245,8 +245,11 @@ def get_num_worker():
         ],
     )
     value = []
-    for temp in response["Datapoints"]:
-        value.append(temp["Sum"])
+    sorted_d=[]
+    if len(response["Datapoints"]) != 0:
+        sorted_d = sorted(response["Datapoints"], key=lambda x: x["Timestamp"])
+        for temp in sorted_d:
+            value.append(temp["Sum"])
     return value
 
 
