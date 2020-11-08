@@ -34,10 +34,10 @@ def auto_scaler_policy():
                 shrink_ratio = request.form.get("shrink_ratio")
                 grow_threshold = request.form.get("grow_threshold")
                 shrink_threshold = request.form.get("shrink_threshold")
-                is_valid, error = validate_input_policy(expand_ratio, shrink_ratio, grow_threshold, shrink_threshold)
+                is_valid, error = validate_input_policy(policy, expand_ratio, shrink_ratio, grow_threshold, shrink_threshold)
                 if not is_valid:
                     flash(error, constants.ERROR)
-                    return redirect(url_for(request.url))
+                    return redirect(url_for("auto_scaler.auto_scaler_policy"))
                 policy[constants.EXPAND_RATIO] = float(expand_ratio) if expand_ratio else policy[constants.EXPAND_RATIO]
                 policy[constants.SHRINK_RATIO] = float(shrink_ratio) if shrink_ratio else policy[constants.SHRINK_RATIO]
                 policy[constants.CPU_UTIL_GROW_THRESHOLD] = int(grow_threshold) if grow_threshold else policy[constants.CPU_UTIL_GROW_THRESHOLD]
@@ -51,9 +51,9 @@ def auto_scaler_policy():
                 )
                 cursor.execute(sql_stmt)
                 db_conn.commit()
-                flash("Successfully update Auto-Scaler policy", constants.INFO)
+                flash("Successfully updated Auto-Scaler policy", constants.INFO)
             except Exception as e:
-                flash("Failed to update Auto-Scaler policy, please try again", constants.ERROR)
+                flash("Unexpected error, failed to update Auto-Scaler policy, please try again", constants.ERROR)
             return redirect(url_for("auto_scaler.auto_scaler_policy"))
 
     return render_template("auto_scaler.html", policy=policy)
@@ -174,7 +174,7 @@ def get_auto_scaler_policy():
     try:
         db_conn = database.get_conn()
         cursor = db_conn.cursor()
-        cursor.execute("SELECT expand_ratio, shrink_ration, cpu_util_grow_threshold, cpu_util_shrink_threshold FROM policy")
+        cursor.execute("SELECT expand_ratio, shrink_ratio, cpu_util_grow_threshold, cpu_util_shrink_threshold FROM policy")
         policy = cursor.fetchone()
         policy = policy if policy else constants.DEFAULT_POLICY
         db_conn.commit()
@@ -183,15 +183,17 @@ def get_auto_scaler_policy():
         return constants.DEFAULT_POLICY
 
 
-def validate_input_policy(expand_ratio, shrink_ratio, grow_threshold, shrink_threshold):
+def validate_input_policy(policy, expand_ratio, shrink_ratio, grow_threshold, shrink_threshold):
     if expand_ratio and float(expand_ratio) <= 1:
         return False, "Expand Ratio must be larger than 1"
-    if shrink_ratio and 0 >= float(shrink_ratio) >= 1:
-        return False, "Shrink Ration must between 0 and 1"
-    if grow_threshold and 0 > int(grow_threshold) > 100:
+    if shrink_ratio and (float(shrink_ratio) >= 1 or float(shrink_ratio) <= 0):
+        return False, "Shrink Ratio must between 0 and 1"
+    if grow_threshold and (int(grow_threshold) >= 100 or int(grow_threshold) <= 0):
         return False, "CPU Utilization Grow Threshold must between 0 and 100"
-    if shrink_threshold and 0 > int(shrink_threshold) > 100:
+    if shrink_threshold and (int(shrink_threshold) >= 100 or int(shrink_threshold) <= 0):
         return False, "CPU Utilization Shrink Threshold must between 0 and 100"
-    if grow_threshold and shrink_threshold and int(grow_threshold) - 10 < int(shrink_threshold):
+    if (grow_threshold and shrink_threshold and int(grow_threshold) - 10 < int(shrink_threshold)) or \
+            (not grow_threshold and shrink_threshold and policy[constants.CPU_UTIL_GROW_THRESHOLD] - 10 < int(shrink_threshold)) or \
+            (grow_threshold and not shrink_threshold and int(grow_threshold) - 10 < policy[constants.CPU_UTIL_SHRINK_THRESHOLD]):
         return False, "Grow Threshold must be at least 10% higher than Shrink Threshold"
     return True, None

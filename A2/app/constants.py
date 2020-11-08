@@ -24,7 +24,7 @@ TERMINATED_STATE = "terminated"
 
 # constants for AWS related
 # TODO: update this to True before deployment
-IS_REMOTE = False
-ROLE_CREDENTIALS_URL = "http://169.254.169.254/latest/meta-data/iam/security-credentials/ECE1779YangWangKuang-WorkerRole"
+IS_REMOTE = True
+ROLE_CREDENTIALS_URL = "http://169.254.169.254/latest/meta-data/iam/security-credentials/ECE1779YangWangKuang-ManagerRole"
 BUCKET_NAME = "ece1779yangkuangwang-bucket"
 LOAD_BALANCER_ARN = "arn:aws:elasticloadbalancing:us-east-1:752103853538:loadbalancer/app/test7/2c8f8c35d8b2d055"
