@@ -7,4 +7,4 @@ CREATE TABLE policy (
     PRIMARY KEY (policy_id)
 )ENGINE=InnoDB;
 
-INSERT INTO policy (policy_id, expand_ratio, shrink_ratio, cpu_util_grow_threshold, cpu_util_shrink_threshold) VALUES (1, 2.0, 0.5, 70, 20);
+INSERT INTO policy (policy_id, expand_ratio, shrink_ratio, cpu_util_grow_threshold, cpu_util_shrink_threshold) VALUES (1, 2.0, 0.5, 60, 10);

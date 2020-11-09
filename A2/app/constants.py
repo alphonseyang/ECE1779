@@ -13,7 +13,7 @@ EXPAND_RATIO = 0
 SHRINK_RATIO = 1
 CPU_UTIL_GROW_THRESHOLD = 2
 CPU_UTIL_SHRINK_THRESHOLD = 3
-DEFAULT_POLICY = [2, 0.5, 70, 20]
+DEFAULT_POLICY = [2, 0.5, 60, 10]
 
 
 # constants related to the worker state
