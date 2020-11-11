@@ -6,7 +6,6 @@ import sys
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from threading import Lock
-
 from flask import Blueprint, flash, render_template, redirect, request, url_for
 
 from app import aws_helper, constants, database, worker
@@ -33,10 +32,11 @@ def display_main_page():
         # update the workers status before displaying
         update_workers_status()
         # workers_chart()
-        labels = range(1, 31)
+        labels = reversed(range(1, 31))
         values = get_num_worker()
         print("INFO: Current workers: {}".format(workers_map))
     dns_name = get_load_balancer_dns()
+
     return render_template("main.html", num_workers=len(workers_map), workers=workers_map, max=8,
                            values=values, labels=labels, dns_name=dns_name)
 
@@ -45,11 +45,11 @@ def display_main_page():
 @bp.route("/<instance_id>", methods=["POST"])
 def get_worker_detail(instance_id):
     with lock:
-        minutes = range(1, 31)
+        minutes = reversed(range(1, 31))
         max1 = 100
         cpu_util = worker.get_cpu_utilization(instance_id)
         http_rate = worker.get_http_request(instance_id)
-        max2 = max(http_rate)+1
+        max2 = max(http_rate) + 1
 
     return render_template("worker_detail.html", cpu=cpu_util, max1=max1, max2=max2, time=minutes, rate=http_rate)
 
@@ -204,9 +204,11 @@ def update_workers_status():
     for instance in instances:
         if instance.id in workers_map:
             if workers_map[instance.id] != instance.state['Name']:
-                if workers_map[instance.id] == constants.STARTING_STATE and instance.state['Name'] == constants.RUNNING_STATE:
+                if workers_map[instance.id] == constants.STARTING_STATE and instance.state[
+                    'Name'] == constants.RUNNING_STATE:
                     start_worker.append(instance.id)
-                if workers_map[instance.id] == constants.STOPPING_STATE and instance.state['Name'] == constants.TERMINATED_STATE:
+                if workers_map[instance.id] == constants.STOPPING_STATE and instance.state[
+                    'Name'] == constants.TERMINATED_STATE:
                     terminate_worker.append(instance.id)
 
     for ins in start_worker:
