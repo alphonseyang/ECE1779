@@ -133,12 +133,14 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
     return True
 
 
-# shut down all workers and the current manager app (close everything but keep data)
+# terminate all workers and stop the current manager instance (close everything but keep data)
 @bp.route("/terminate_manager", methods=["POST"])
 def terminate_manager():
     database.get_conn().close()
     if constants.IS_REMOTE:
         clean_all_workers()
+        ec2 = aws_helper.session.client("ec2")
+        ec2.stop_instances(InstanceIds=['i-0d92ec486e6faeb22'])
         sys.exit(4)
     else:
         shutdown = request.environ.get("werkzeug.server.shutdown")
