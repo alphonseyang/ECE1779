@@ -112,7 +112,7 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
             return True
     else:
         if (len(workers_map) - changed_workers_num) < 1:
-            flash("Can not downsize worker size to 0 ", constants.ERROR)
+            flash("Cannot downsize worker size to 0 ", constants.ERROR)
             return False
         else:
             stopping = 0
@@ -123,7 +123,7 @@ def change_workers_num(is_increase: bool, changed_workers_num: int) -> bool:
                 else:
                     inslist.append(instance_id)
             if (len(workers_map) - changed_workers_num - stopping) < 1:
-                flash("Can not downsize worker size to 0 ", constants.ERROR)
+                flash("Cannot downsize worker size to 0 ", constants.ERROR)
                 return False
             else:
                 for i in range(changed_workers_num):
