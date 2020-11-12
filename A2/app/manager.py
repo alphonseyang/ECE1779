@@ -6,6 +6,7 @@ import sys
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from threading import Lock
+
 from flask import Blueprint, flash, render_template, redirect, request, url_for
 
 from app import aws_helper, constants, database, worker
@@ -32,7 +33,7 @@ def display_main_page():
         # update the workers status before displaying
         update_workers_status()
         # workers_chart()
-        labels = reversed(range(1, 31))
+        labels = range(30, 0, -1)
         values = get_num_worker()
         print("INFO: Current workers: {}".format(workers_map))
     dns_name = get_load_balancer_dns()
@@ -45,7 +46,7 @@ def display_main_page():
 @bp.route("/<instance_id>", methods=["POST"])
 def get_worker_detail(instance_id):
     with lock:
-        minutes = reversed(range(1, 31))
+        minutes = range(30, 0, -1)
         max1 = 100
         cpu_util = worker.get_cpu_utilization(instance_id)
         http_rate = worker.get_http_request(instance_id)
@@ -204,11 +205,11 @@ def update_workers_status():
     for instance in instances:
         if instance.id in workers_map:
             if workers_map[instance.id] != instance.state['Name']:
-                if workers_map[instance.id] == constants.STARTING_STATE and instance.state[
-                    'Name'] == constants.RUNNING_STATE:
+                if workers_map[instance.id] == constants.STARTING_STATE and \
+                        instance.state['Name'] == constants.RUNNING_STATE:
                     start_worker.append(instance.id)
-                if workers_map[instance.id] == constants.STOPPING_STATE and instance.state[
-                    'Name'] == constants.TERMINATED_STATE:
+                if workers_map[instance.id] == constants.STOPPING_STATE and \
+                        instance.state['Name'] == constants.TERMINATED_STATE:
                     terminate_worker.append(instance.id)
 
     for ins in start_worker:
