@@ -1,0 +1,2 @@
+S3_BUCKET = ""
+USER_DDB_TABLE = ""
