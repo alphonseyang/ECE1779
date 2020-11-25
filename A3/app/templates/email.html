@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Service{% endblock %}
+
+{% block content %}
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">Manage Subscription</h3>
+                <div class="card-body">
+                    <form class="form-signin" method="post" action="/email">
+                        <div class="form-label-group">
+                            <input type="text" id="email" class="form-control" placeholder="Email"
+                                   name="email"
+                                   required>
+                            <br>
+                        </div>
+                        <div class="form-label-group text-center">
+                            <input class="btn btn-primary text-uppercase" type="submit" name="subscribe"
+                                   value="Subscribe">
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+{% endblock %}

@@ -1,3 +1,4 @@
 zappa
 flask
 boto3
+validate_email
