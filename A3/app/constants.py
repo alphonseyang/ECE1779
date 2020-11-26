@@ -1,6 +1,6 @@
 # AWS Resources
 S3_BUCKET = ""
-USER_DDB_TABLE = ""
+SUBSCRIPTION_DDB_TABLE = "subscription"
 
 # Message Categories
 ERROR = "error"

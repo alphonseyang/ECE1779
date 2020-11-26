@@ -13,14 +13,38 @@
                 <div class="card-body">
                     <form class="form-signin" method="post" action="/email">
                         <div class="form-label-group">
+                            <label for="email">Email Address</label>
                             <input type="text" id="email" class="form-control" placeholder="Email"
                                    name="email"
                                    required>
                             <br>
                         </div>
+
+                        <div class="form-label-group">
+                            <label for="country">Country you want to subscribe/unsubscribe</label>
+                            <select name="country" id="country" class="form-control">
+                                {%for country in countries%}
+                                <option value={{country}}>{{country}}</option>
+                                {%endfor%}
+                            </select>
+                            <br>
+                        </div>
+
+                        <div class="form-label-group">
+                            <label for="frequency">How often you want to receive the prediction</label>
+                            <select name="frequency" id="frequency" class="form-control">
+                                <option value="daily">Every Day</option>
+                                <option value="weekly">Every Week</option>
+                                <option value="monthly">Every Month</option>
+                            </select>
+                            <br>
+                        </div>
+
                         <div class="form-label-group text-center">
                             <input class="btn btn-primary text-uppercase" type="submit" name="subscribe"
                                    value="Subscribe">
+                            <input class="btn btn-danger text-uppercase" type="submit" name="unsubscribe"
+                                   value="unsubscribe">
                         </div>
                     </form>
 
