@@ -4,7 +4,10 @@ from collections import defaultdict
 import boto3
 from boto3.dynamodb.conditions import Attr
 
-from app import constants
+SQS_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/752103853538/subscription"
+EMAIL_WORKER_BATCH_SIZE = 10000
+SUBSCRIPTION_DDB_TABLE = "subscription"
+
 
 '''
 scan the DDB subscription table to check for the emails that need to have the email sent 
@@ -25,7 +28,7 @@ def get_emails_countries(freq):
     ddb = boto3.client("dynamodb")
     outcome = defaultdict(list)
     response = ddb.scan(
-        TableName=constants.SUBSCRIPTION_DDB_TABLE,
+        TableName=SUBSCRIPTION_DDB_TABLE,
         FilterExpression=Attr("frequency").eq(freq)
     )
     for item in response.get("Items", list()):
@@ -36,11 +39,11 @@ def get_emails_countries(freq):
 # create SQS message for worker to consume
 def create_worker_tasks(country, emails, freq):
     sqs = boto3.client("ses")
-    bulk = constants.EMAIL_WORKER_BATCH_SIZE
+    bulk = EMAIL_WORKER_BATCH_SIZE
     for i in range(len(emails), bulk):
         bulk_emails = emails[i:i+bulk]
         sqs.send_message(
-            QueueUrl=constants.SQS_QUEUE_URL,
+            QueueUrl=SQS_QUEUE_URL,
             MessageBody=json.dumps({
                 "country": country,
                 "emails": bulk_emails,

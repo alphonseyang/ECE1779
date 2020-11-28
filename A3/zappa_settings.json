@@ -1,10 +1,11 @@
 {
     "dev": {
-        "app_function": "app.app",
+        "app_function": "zappa_init.app",
         "aws_region": "us-east-1",
         "profile_name": "default",
         "project_name": "a3",
         "runtime": "python3.8",
-        "s3_bucket": "ece1779yangkuangwang-a3-deployment"
+        "s3_bucket": "ece1779yangkuangwang-a3-deployment",
+        "keep_warm": false
     }
 }
