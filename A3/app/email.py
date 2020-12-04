@@ -4,7 +4,7 @@ from validate_email import validate_email
 
 from app import constants
 
-ddb = boto3.client("dynamodb")
+ddb = boto3.client("dynamodb", region_name='us-east-1')
 
 
 # main entry point to the email service

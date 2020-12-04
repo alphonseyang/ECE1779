@@ -13,9 +13,13 @@ def create_app():
 
     app.secret_key = "ECE1779"
 
-    @app.route("/")
-    def data_display():
+    @app.route("/", methods=["GET", "POST"])
+    def data_config():
         return data.work()
+
+    @app.route("/display", methods=["POST"])
+    def data_display():
+        return data.display()
 
     @app.route("/email", methods=["GET", "POST"])
     def email_service():

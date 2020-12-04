@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}main{% endblock %}
+
+{% block content %}
+<!--<script src="https://code.jquery.com/jquery-1.12.3.min.js"></script>-->
+<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.js"></script>-->
+
+<!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker.css"/>-->
+<!--<script>-->
+<!--    $(document).ready(function(){-->
+<!--        var date_input=$('input[name="date"]'); //our date input has the name "date"-->
+<!--        var container=$('.bootstrap-iso form').length>0 ? $('.bootstrap-iso form').parent() : "body";-->
+<!--        date_input.datepicker({-->
+<!--            format: 'mm/dd/yyyy',-->
+<!--            container: container,-->
+<!--            todayHighlight: true,-->
+<!--            autoclose: true,-->
+<!--        })-->
+<!--    })-->
+<!--</script>-->
+<script src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+<script>
+    $(function () {
+  $("#datepicker").datepicker({
+        autoclose: false,
+        todayHighlight: true
+  }).datepicker('update', new Date());
+});
+$(function () {
+  $("#datepicker1").datepicker({
+        autoclose: true,
+        todayHighlight: true
+  }).datepicker('update', new Date());
+});
+
+</script>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9 col-md-9 col-lg-5 mx-auto">
+            <div class="card card-signin my-5">
+                <h3 class="card-title text-center">Prediction Configuration</h3>
+                <div class="card-body">
+                    <form class="form-signin" method="post" action="/display">
+                    <div class="form-label-group">
+                        <label for="country">Select a country</label>
+                            <select name="country" id="country" class="form-control">
+                                {%for country in countries%}
+                                <option value="{{country}}">{{country}}</option>
+                                {%endfor%}
+                            </select><br>
+                    </div>
+
+                     <label for="startdate">Select a prediction start date</label>
+                    <div class="input-group date" data-provide="datepicker">
+                        <input type="text"  name="startdate" id="startdate"  placeholder="Start date"  class="form-control" required>
+                         <div class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                         </div>
+                     </div><br>
+
+                    <label for="enddate">Select a prediction end date</label>
+                     <div class="input-group date" data-provide="datepicker">
+                     <input type="text"  name="enddate" id="enddate"  placeholder="End date" class="form-control" required>
+                         <div class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                         </div>
+                     </div><br>
+
+                    <input class="btn btn-primary" type="submit" name="predict"
+                                   value="Predict">
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+{% endblock %}
