@@ -1,10 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
+{% block title %}display{% endblock %}
+
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<body>
+<div class="container">
+    <div class="row">
+
+        <div class="col-sm-9 col-md-9 col-lg-9 mx-auto">
+            <div class="card card-signin my-5">
+                <br>
+                <h3 class="card-title text-center">Forecast</h3>
+
+                <canvas id="chart" width="400" height="400"></canvas>
+                <script>
+                    function newdate(i){
+                        var d = i.toString()
+                        var l = "-"
+                        var t = d.slice(0,4).concat(l,d.slice(4,6),l,d.slice(6));
+                        d = new Date(t).toISOString().slice(0,10);
+                        return d;
+                    }
+                    // Line chart
+                       new Chart(document.getElementById("chart"), {
+                      type: 'line',
+                      data: {
+                         labels : [
+                              {% for item in timeseries %}
+                                newdate({{item}}),
+                              {% endfor %}
+                            ],
+                         datasets : [{
+                              data : {{p10}},
+                              label: "p10 Forecast",
+                              borderColor: "#3e95cd",
+                              fill: false
+                              },{
+                              data :{{p50}},
+                              label: "p50 Forecast",
+                              borderColor: "#8e5ea2",
+                              fill: false
+                              },{
+                               data : {{p90}},
+                              label: "p90 Forecast",
+                              borderColor: "#3cba9f",
+                              fill: false
+                              }
+                            ]
+                      },
+                      options: {
+                        title: {
+                          display: true,
+                          text: 'Prediction Cases of COVID in {{country}}'
+                        },
+                        hover: {
+                         mode: 'index',
+                         intersect: true
+                        },
+                      }
+                    });
+
+                </script>
+            </div>
+        </div>
+
+    </div>
+</div>
 </body>
-</html>
+
+{% endblock %}
