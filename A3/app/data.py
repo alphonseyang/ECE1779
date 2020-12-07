@@ -61,7 +61,7 @@ def display():
 
 def get_supported_countries():
     # TODO: this should be dynamic
-    return ["Canada", "China ", "United States", "Japan", "South Korea",
+    return ["Canada", "China ", "US", "Japan", "South Korea",
             "United Kingdom", "France", "Germany", "Mexico", "India"]
 
 
@@ -145,8 +145,8 @@ def parse_prediction_data(response):
         p90.append(f90[i]["Value"])
         t = f10[i]['Timestamp'].split("T")
         t = t[0].split("-")
-        t = t[0]+ t[1] + t[2]
+        t = t[0] + t[1] + t[2]
         timeseries.append(t)
 
-    return p10,p50,p90,timeseries
+    return p10, p50, p90, timeseries
 
