@@ -1,12 +1,12 @@
-import boto3
-import botocore
-from flask import flash, redirect, render_template, request, url_for
-from validate_email import validate_email
-
+from datetime import datetime, date
 from io import StringIO
-from app import constants
+
+import boto3
 import pandas as pd
-from datetime import datetime,date
+from flask import flash, redirect, render_template, request, url_for
+
+from app import constants
+
 
 def work():
     countries = get_supported_countries()
@@ -60,13 +60,11 @@ def display():
 
 
 def get_supported_countries():
-    # TODO: this should be dynamic
     return ["Canada", "China ", "United States", "Japan", "South Korea",
             "United Kingdom", "France", "Germany", "Mexico", "India"]
 
 
 def validate_date(startdate, enddate):
-
     if startdate < enddate:
         return True
     else:
@@ -100,7 +98,7 @@ def get_history_data(country, startdate, enddate):
             timeseries.append(tr)
         case = df.iloc[delta1:delta2 + delta1 + 1]['cases'].tolist()
 
-    return timeseries, case,csv_end
+    return timeseries, case, csv_end
 
 
 def get_prediction_data(country, startdate, enddate):
@@ -112,7 +110,6 @@ def get_prediction_data(country, startdate, enddate):
     end = end.split(" ")
     start = start[0] + 'T' + start[1]
     end = end[0] + 'T' + end[1]
-    err = None
     try:
         response = client.query_forecast(
             ForecastArn='arn:aws:forecast:us-east-1:324985808241:forecast/a3_covid_global_forecast',
@@ -145,8 +142,8 @@ def parse_prediction_data(response):
         p90.append(f90[i]["Value"])
         t = f10[i]['Timestamp'].split("T")
         t = t[0].split("-")
-        t = t[0]+ t[1] + t[2]
+        t = t[0] + t[1] + t[2]
         timeseries.append(t)
 
-    return p10,p50,p90,timeseries
+    return p10, p50, p90, timeseries
 

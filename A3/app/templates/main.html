@@ -46,7 +46,7 @@ $(function () {
             <div class="card card-signin my-5">
                 <h3 class="card-title text-center">Check Historical Data</h3>
                 <div class="card-body">
-                    <form class="form-signin" method="post" action="/display">
+                    <form class="form-signin" method="post" action={{url_for("data_display")}}>
                     <div class="form-label-group">
                         <label for="historycountry">Select a country</label>
                             <select name="historycountry" id="historycountry" class="form-control">
@@ -86,7 +86,7 @@ $(function () {
             <div class="card card-signin my-5">
                 <h3 class="card-title text-center">Check Forecast Data</h3>
                 <div class="card-body">
-                    <form class="form-signin" method="post" action="/display">
+                    <form class="form-signin" method="post" action={{url_for("data_display")}}>
                     <div class="form-label-group">
                         <label for="country">Select a country</label>
                             <select name="country" id="country" class="form-control">

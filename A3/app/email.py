@@ -83,8 +83,7 @@ def process_unsubscribe(email_address, country):
 
 # get the countries list that can be used
 def get_supported_countries():
-    # TODO: this should be dynamic
-    return ["Canada", "China", "United States", "Japan", "South Korea",
+    return ["Canada", "China ", "US", "Japan", "South Korea",
             "United Kingdom", "France", "Germany", "Mexico", "India"]
 
 

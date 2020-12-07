@@ -9,11 +9,11 @@
         {% block header %}
 
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="/">ECE1779</a>
+            <a class="navbar-brand" href={{url_for("data_config")}}>ECE1779</a>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="nav navbar-nav">
                     <li class="nav-item">
-                        <a href="/email" class="nav-link">Subscription</a>
+                        <a href={{url_for("email_service")}} class="nav-link">Subscription</a>
                     </li>
                 </ul>
             </div>
