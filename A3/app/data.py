@@ -60,7 +60,7 @@ def display():
 
 
 def get_supported_countries():
-    return ["Canada", "China ", "United States", "Japan", "South Korea",
+    return ["Canada", "China ", "US", "Japan", "South Korea",
             "United Kingdom", "France", "Germany", "Mexico", "India"]
 
 
