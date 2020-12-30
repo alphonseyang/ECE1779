@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import boto3
 from boto3.dynamodb.conditions import Attr
 
-SQS_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/752103853538/subscription"
+SQS_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/*****/subscription"
 EMAIL_WORKER_BATCH_SIZE = 10000
 SUBSCRIPTION_DDB_TABLE = "subscription"
 sns = boto3.client("sns")
@@ -64,7 +64,7 @@ def publish_message(topic_arn, country, freq):
     start = start[0] + 'T' + start[1]
     end = end[0] + 'T' + end[1]
     response = forecast.query_forecast(
-        ForecastArn='arn:aws:forecast:us-east-1:324985808241:forecast/a3_covid_global_forecast',
+        ForecastArn='arn:aws:forecast:us-east-1:*****:forecast/a3_covid_global_forecast',
         StartDate=start,
         EndDate=end,
         Filters={

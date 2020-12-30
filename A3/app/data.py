@@ -112,7 +112,7 @@ def get_prediction_data(country, startdate, enddate):
     end = end[0] + 'T' + end[1]
     try:
         response = client.query_forecast(
-            ForecastArn='arn:aws:forecast:us-east-1:324985808241:forecast/a3_covid_global_forecast',
+            ForecastArn='arn:aws:forecast:us-east-1:*****:forecast/a3_covid_global_forecast',
             StartDate=start,
             EndDate=end,
             Filters={

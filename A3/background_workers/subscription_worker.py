@@ -3,7 +3,7 @@ import json
 import boto3
 
 SEND_EMAIL_BATCH_SIZE = 100
-SOURCE_EMAIL = "alphonse.yang@mail.utoronto.ca"
+SOURCE_EMAIL = "*****@mail.utoronto.ca"
 
 
 # receive the SQS trigger and process the email to send

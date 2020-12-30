@@ -5,7 +5,7 @@
         "profile_name": "default",
         "project_name": "a3",
         "runtime": "python3.8",
-        "s3_bucket": "ece1779yangkuangwang-a3-deployment2",
+        "s3_bucket": "*****",
         "keep_warm": false
     }
 }

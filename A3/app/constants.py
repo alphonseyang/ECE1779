@@ -1,5 +1,5 @@
 # AWS Resources
-S3_BUCKET = "ece1779yangkuangwang-a3-deployment2"
+S3_BUCKET = "*****"
 SUBSCRIPTION_DDB_TABLE = "subscription"
 
 # Message Categories
