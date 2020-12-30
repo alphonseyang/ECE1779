@@ -15,15 +15,15 @@ DATABASE_DEV_CONFIG = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
-    "password": "rootroot",
-    "db": "ECE1779"
+    "password": "*****",
+    "db": "*****"
 }
 DATABASE_PROD_RDS_CONFIG = {
-    "host": "ece1779yangkuangwang-db.cysdmtlxkjur.us-east-1.rds.amazonaws.com",
+    "host": "*****.*****.us-east-1.rds.amazonaws.com",
     "port": 3306,
     "user": "root",
-    "password": "ECE1779pass.",
-    "db": "ECE1779"
+    "password": "*****",
+    "db": "*****"
 }
 
 
